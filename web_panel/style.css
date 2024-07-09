@@ -21,7 +21,7 @@ body{
     display: flex;
     justify-content: space-between;
     
-    margin: 15px;
+    margin: 15px; 
     padding: 15px;
     background-color: #5b2c6f;
     border-radius: 16px;
@@ -48,10 +48,26 @@ body{
     border-radius: 16px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
 }
-.card-2 h2{
+.card-2 > .tittle h2{
     text-align: center;
     color: #5b2c6f;
 }
+
+.card-2 .content {
+    display: flex;
+    flex-direction: column;
+
+
+}
+.parameter {
+    display: flex;
+    flex-direction: column;
+    
+}
+.parameter > label, input {
+    margin: 10px 0px;
+}
+
 #btn-save{
     background-color: #f1c40f;
     color: #eee0e5;
@@ -64,6 +80,7 @@ body{
     margin: 8px;
     cursor: pointer;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    text-align: center;
     transition: 0.5s ease all;
 }
 #btn-save:hover{
@@ -94,3 +111,14 @@ body{
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.8);
     transition: 0.5s ease all;
 }
+
+
+@media screen and (max-width: 552px) {
+   .head{
+    flex-direction: column;
+   }
+   .card-1,.card-2{
+    width: 93%;
+    margin: 10px 0px;
+   }
+  }

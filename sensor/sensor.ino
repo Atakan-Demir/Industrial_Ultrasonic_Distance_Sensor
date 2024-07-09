@@ -1,26 +1,25 @@
-#include "SPI.h"                                     // SPI kütüphanesini ekliyoruz
-#include "Wire.h"                                    // Wire kütüphanesini ekliyoruz
-#include "Adafruit_SSD1306.h"                        // Adafruit'in SSD1306 kütüphanesini ekliyoruz
-int genislik = 128;                                  // OLED ekran genişliği (piksel olarak)
-int yukseklik = 64;                                  // OLED ekran yüksekliği (piksel olarak)
-int adres = 0x3C;                                    // 128x64 için 0x3C (bazı modüllerde 0x3D)
-Adafruit_SSD1306 ekran(genislik, yukseklik, &Wire);  // Kütüphaneyi tanımlıyoruz
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_SSD1306.h>
 
-const int numReadings = 5;    // Ölçüm sayısı
-float readings[numReadings];  // Ölçümleri tutacak dizi
-int currentIndex = 0;         // Dizide gezinmek için indis
-float total = 0.0;            // Toplam değer
+// OLED ekran ayarları
+const int SCREEN_WIDTH = 128;
+const int SCREEN_HEIGHT = 64;
+const int OLED_ADDRESS = 0x3C;
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
-const int buton1Pin = 36;
-const int buton2Pin = 39;
-const int buton3Pin = 34;
-const int buton4Pin = 35;
+// Hareketli ortalama için ayarlar
+const int NUM_READINGS = 5;
+float readings[NUM_READINGS];
+int currentIndex = 0;
+float total = 0.0;
 
-int buton1State = 0;
-int buton2State = 0;
-int buton3State = 0;
-int buton4State = 0;
+// Buton pinleri
+const int buttonPins[] = {36, 39, 34, 35};
+const int NUM_BUTTONS = sizeof(buttonPins) / sizeof(buttonPins[0]);
+int buttonStates[NUM_BUTTONS];
 
+// Seri iletişim ayarları
 #define RXD2 16
 #define TXD2 17
 
@@ -28,85 +27,105 @@ unsigned char data[4] = {};
 float distance;
 
 
+// Parametreler
+float minDis=3.0;
+float maxDis=400.0;
+float offset=0.0;
+
+
 void setup() {
-  ekran.begin(SSD1306_SWITCHCAPVCC, adres);
+  // OLED ekran başlatma
+  display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
+  display.clearDisplay();
+
+  // Seri portları başlatma
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
-  pinMode(buton1Pin, INPUT);
-  pinMode(buton2Pin, INPUT);
-  pinMode(buton3Pin, INPUT);
-  pinMode(buton4Pin, INPUT);
+
+  // Buton pinlerini giriş olarak ayarlama
+  for (int i = 0; i < NUM_BUTTONS; i++) {
+    pinMode(buttonPins[i], INPUT);
+  }
 }
 
 void loop() {
-  do {
-    for (int i = 0; i < 4; i++) {
-      data[i] = Serial2.read();
-    }
-  } while (Serial2.read() == 0xff);
+  // Ultrasonik sensör verilerini okuma
+  if (readSensorData()) {
 
-  Serial2.flush();
+    if (distance > minDis * 10 && distance < maxDis * 10 ) {
+      
+      Serial.print("Distance: ");
+      Serial.println(distance / 10);
+
+      // Hareketli ortalama hesaplama
+      updateMovingAverage(distance / 10);
+      float average = total / NUM_READINGS;
+      
+      // Ortalamayı seri porta yazdırma
+      Serial.print("Moving Average: ");
+      Serial.print(average, 2);
+      Serial.println(" cm");
+    } else {
+      Serial.println("Exceeding the lower or upper limit");
+    }
+  } else {
+    Serial.println("ERROR");
+  }
+
+  // OLED ekranda değerleri gösterme
+  display.clearDisplay();
+  displayText(String(distance / 10), 10, 10);
+
+  // Buton durumlarını okuma
+  readButtonStates();
+
+  delay(3);  // 100ms bekleyerek ölçüm tekrarı
+}
+
+// Sensör verilerini okuma fonksiyonu
+bool readSensorData() {
+  while (Serial2.available() < 4) {
+    // Verinin tamamlanmasını bekliyoruz
+  }
+
+  for (int i = 0; i < 4; i++) {
+    data[i] = Serial2.read();
+  }
 
   if (data[0] == 0xff) {
-    int sum;
-    sum = (data[0] + data[1] + data[2]) & 0x00FF;
+    int sum = (data[0] + data[1] + data[2]) & 0x00FF;
     if (sum == data[3]) {
       distance = (data[1] << 8) + data[2];
-      if (distance > 30) {
-        Serial.print("distance=");
-        Serial.println(distance / 10);
-
-        // Değerleri diziye ekleme ve toplamı güncelleme
-        total = total - readings[currentIndex] + distance / 10;
-        readings[currentIndex] = distance / 10;
-        // Gezici indisini güncelleme
-        currentIndex = (currentIndex + 1) % numReadings;
-
-        // Ortalama hesaplama
-        float average = total / numReadings;
-
-        // Ortalamayı seri porta yazdırma
-        Serial.print("Moving Average: ");
-        Serial.print(average, 2);  // İki ondalık hassasiyetle yazdırma
-        Serial.println(" cm");
-        
-        
-      } else {
-        Serial.println("Below the lower limit");
-      }
-    } else Serial.println("ERROR");
+      return true;
+    }
   }
-  delay(1);
+  return false;
+}
 
+// Hareketli ortalama güncelleme fonksiyonu
+void updateMovingAverage(float newValue) {
+  total = total - readings[currentIndex] + newValue;
+  readings[currentIndex] = newValue;
+  currentIndex = (currentIndex + 1) % NUM_READINGS;
+}
 
-  ekran.clearDisplay();
-  delay(1);
-  yaziyaz(String(distance / 10), 10, 10);
-  delay(1);
-
-  buton1State = digitalRead(buton1Pin);
-  buton2State = digitalRead(buton2Pin);
-  buton3State = digitalRead(buton3Pin);
-  buton4State = digitalRead(buton4Pin);
-
-  if (buton1State == HIGH) {
-    Serial.println("Buton 1 Basıldı.");
-  }
-  if (buton2State == HIGH) {
-    Serial.println("Buton 2 Basıldı.");
-  }
-  if (buton3State == HIGH) {
-    Serial.println("Buton 3 Basıldı.");
-  }
-  if (buton4State == HIGH) {
-    Serial.println("Buton 4 Basıldı.");
+// Buton durumlarını okuma ve seri porta yazdırma fonksiyonu
+void readButtonStates() {
+  for (int i = 0; i < NUM_BUTTONS; i++) {
+    buttonStates[i] = digitalRead(buttonPins[i]);
+    if (buttonStates[i] == HIGH) {
+      Serial.print("Button ");
+      Serial.print(i + 1);
+      Serial.println(" pressed.");
+    }
   }
 }
 
-void yaziyaz(String metin, int cx, int cy) {
-  ekran.setTextSize(3);  // Yazı boyutu
-  ekran.setTextColor(SSD1306_WHITE);
-  ekran.setCursor(cx, cy);  // Başlangıç konumu
-  ekran.println(metin);
-  ekran.display();
+// OLED ekranda metin yazdırma fonksiyonu
+void displayText(String text, int x, int y) {
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(x, y);
+  display.println(text);
+  display.display();
 }
