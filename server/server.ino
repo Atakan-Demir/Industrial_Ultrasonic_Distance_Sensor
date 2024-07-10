@@ -1,8 +1,3 @@
-/*********
-  Rui Santos
-  Complete project details at https://randomnerdtutorials.com  
-*********/
-
 // Import required libraries
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
@@ -12,10 +7,7 @@
 const char* ssid = "DmR 2.4";
 const char* password = "12231551";
 
- // Set LED GPIO
-const int ledPin = 2;
-// Stores LED state
-String ledState;
+
 
 const char* PARAM_INPUT = "value";
 const char* PARAM_INPUT1 = "maxdis";
@@ -47,7 +39,7 @@ String processor(const String& var){
 void setup(){
   // Serial port for debugging purposes
   Serial.begin(115200);
-  pinMode(ledPin, OUTPUT);
+
 
   // Initialize SPIFFS
   if(!SPIFFS.begin(true)){

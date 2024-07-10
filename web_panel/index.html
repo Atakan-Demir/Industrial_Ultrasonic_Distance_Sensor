@@ -19,10 +19,17 @@
 
     <div class="head">
         <div class="card-1">
+            <div class="progressa">
+                <div class="progressab" id="black-segment"></div>
+                <div class="progressab" id="green-segment"></div>
+                <div class="progressab" id="offset-segment"></div>
+              </div>
             <div class="content">
                 <h2>Distance</h2>
                 <h3 id="distance">0</h3>
                 <h4>cm</h4>
+
+                
             </div>
         </div>
         <div class="card-2">
@@ -34,15 +41,15 @@
 
                     <div class="parameter">
                         <label id="minDis">Minimum Distance (mm)</label>
-                        <input type="number" class="form-control" name="minumumdistance" id="inputMinDis" value="%SLIDERVALUE%">
+                        <input type="number" class="form-control" name="minumumdistance" id="inputMinDis" value="%SLIDERVALUE%" min="3" max="399">
                     </div>
                     <div class="parameter">
                         <label id="minDis">Maximum Distance (mm)</label>
-                        <input type="number" class="form-control" name="maximumdistance" id="inputMaxDis" value="%MAXDISVALUE%">
+                        <input type="number" class="form-control" name="maximumdistance" id="inputMaxDis" value="%MAXDISVALUE%" min="4" max="400">
                     </div>
                     <div class="parameter">
                         <label id="minDis">Offset Distance (mm)</label>
-                        <input type="number" class="form-control" name="offset" id="inputOffset" value="%OFFSETVALUE%">
+                        <input type="number" class="form-control" name="offset" id="inputOffset" value="%OFFSETVALUE%" min="-50" max="50">
                     </div>
                 </div>
                 <!-- button-->
