@@ -15,7 +15,7 @@ const char* firstRunKey = "firstRun";
 const char* mindisKey = "mindisValue";
 const char* maxdisKey = "maxdisValue";
 const char* offsetKey = "offsetValue";
-//const char* intervalKey = "intervalValue";
+const char* intervalKey = "intervalValue";
 
 // Seri iletişim ayarları
 #define RXD2 16
@@ -27,10 +27,11 @@ const char* password = "12231551";
 const char* PARAM_INPUT = "value";
 const char* PARAM_INPUT1 = "maxdis";
 const char* PARAM_INPUT2 = "offset";
+const char* PARAM_INPUT3 = "interval";
 String mindisValue = "3";
 String maxdisValue = "400";
 String offsetValue = "0";
-const long interval = 0;
+unsigned long interval = 0;
 
 unsigned long previousMillis = 0;
 
@@ -60,6 +61,9 @@ String processor(const String& var) {
   }
   else if (var == "DISTANCEVALUE") {
     return String(distance);
+  }
+  else if (var == "INTERVALVALUE") {
+    return String(interval);
   }
   return String();
 }
@@ -94,13 +98,13 @@ void setup() {
 
   // ilk mi
   if (!preferences.getBool(firstRunKey, false)) {
-    Serial.println("First run...");
+    //Serial.println("First run...");
 
 
     preferences.putString(mindisKey, mindisValue);
     preferences.putString(maxdisKey, maxdisValue);
     preferences.putString(offsetKey, offsetValue);
-
+    preferences.putULong(intervalKey, interval);
 
     preferences.putBool(firstRunKey, true);
 
@@ -108,22 +112,25 @@ void setup() {
     // Cihazı resetle
     ESP.restart();
   } else {
-    Serial.println("loading saved values...");
+    //Serial.println("loading saved values...");
 
     // Load the saved values from Preferences
     mindisValue = preferences.getString(mindisKey, "3");
     maxdisValue = preferences.getString(maxdisKey, "400");
     offsetValue = preferences.getString(offsetKey, "0");
+    interval = preferences.getULong(intervalKey, 0);
   }
 
   // Display the values
   Serial.println("Min Distance: " + mindisValue);
   Serial.println("Max Distance: " + maxdisValue);
   Serial.println("Offset: " + offsetValue);
+  Serial.println("Interval: " + interval);
 
   preferences.end();
 
-  setParam(mindisValue, maxdisValue, offsetValue);
+  setParam(mindisValue, maxdisValue, offsetValue, interval);
+
   // OLED ekran başlatma
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
   display.clearDisplay();
@@ -131,6 +138,8 @@ void setup() {
   // Seri portları başlatma
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  Serial.println("1. interval: " + interval);
+
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
@@ -170,15 +179,19 @@ void setup() {
       String p1 = request->getParam(PARAM_INPUT)->value();
       String p2 = request->getParam(PARAM_INPUT1)->value();
       String p3 = request->getParam(PARAM_INPUT2)->value();
+      String p4 = request->getParam(PARAM_INPUT3)->value();
       events.send(String(p1).c_str(), "MinDis", millis());
       events.send(String(p2).c_str(), "MaxDis", millis());
       events.send(String(p3).c_str(), "OffsetVal", millis());
-      writeEeprom(p1, p2, p3);
-      setParam(p1, p2, p3);
+      events.send(String(p4).c_str(), "IntervalVal", millis());
+      unsigned long p4_ULong = strtoul(p4.c_str(), NULL, 10);
+
+      writeEeprom(p1, p2, p3, p4_ULong);
+      setParam(p1, p2, p3, p4_ULong);
     } else {
       inputMessage = "No message sent";
     }
-    Serial.println("MinDis: " + mindisValue + "/MaxDis: " + maxdisValue + "/Offset: " + offsetValue);
+    Serial.println("MinDis: " + mindisValue + "/MaxDis: " + maxdisValue + "/Offset: " + offsetValue + "/Interval: " + interval);
     request->send(200, "text/plain", "OK");
 
   });
@@ -247,13 +260,14 @@ bool readSensorData() {
   return false;
 }
 
-void setParam(String p1, String p2, String p3) {
+void setParam(String p1, String p2, String p3, unsigned long p4) {
   minDis = p1.toFloat();
   maxDis = p2.toFloat();
   offset = p3.toFloat();
+  interval = p4;
 }
 
-void writeEeprom(String p1, String p2, String p3) {
+void writeEeprom(String p1, String p2, String p3, unsigned long p4) {
   preferences.begin(resetNamespace, false);
   if (p1 != mindisValue) {
     mindisValue = p1;
@@ -267,8 +281,14 @@ void writeEeprom(String p1, String p2, String p3) {
     offsetValue = p3;
     preferences.putString(offsetKey, p3);
   }
+  if (p4 != interval) {
+    interval = p4;
+    preferences.putULong(intervalKey, interval);
+  }
+
   preferences.end();
   delay(2000);
+
 }
 
 

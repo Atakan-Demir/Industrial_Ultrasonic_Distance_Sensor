@@ -6,12 +6,14 @@ document.addEventListener("DOMContentLoaded", function () {
     minDis: null,
     maxDis: null,
     offset: null,
+    interval: null,
     distance: null
   };
 
   var minDis;
   var maxDis;
   var offset;
+  var interval;
   var distance;
 
   //bar
@@ -25,45 +27,50 @@ document.addEventListener("DOMContentLoaded", function () {
     var source = new EventSource('/events');
 
     source.addEventListener('open', function (e) {
-        console.log("Events Connected");
+      console.log("Events Connected");
     }, false);
     source.addEventListener('error', function (e) {
-        if (e.target.readyState != EventSource.OPEN) {
-            console.log("Events Disconnected");
-        }
+      if (e.target.readyState != EventSource.OPEN) {
+        console.log("Events Disconnected");
+      }
     }, false);
 
     source.addEventListener('message', function (e) {
-        console.log("message", e.data);
+      console.log("message", e.data);
     }, false);
 
 
-
+    /**************************************** */
     source.addEventListener('MinDis', function (e) {
-        document.getElementById("inputMinDis").value = e.data;
+      document.getElementById("inputMinDis").value = e.data;
     }, false);
 
     source.addEventListener('MaxDis', function (e) {
-        document.getElementById("inputMaxDis").value = e.data;
+      document.getElementById("inputMaxDis").value = e.data;
     }, false);
 
     source.addEventListener('OffsetVal', function (e) {
-        document.getElementById("inputOffset").value = e.data;
+      document.getElementById("inputOffset").value = e.data;
+    }, false);
+
+    source.addEventListener('IntervalVal', function (e) {
+      document.getElementById("inputInterval").value = e.data;
     }, false);
 
     source.addEventListener('DistanceVal', function (e) {
-        var elm = document.getElementById("distanceValue");
-        elm.innerHTML = e.data;
-        var distance = parseFloat(e.data);
-        if (distance<currentValues.minDis||distance>currentValues.maxDis) {
-          elm.style.color='red';
-        }
-        else{
-          elm.style.color='black';
-        }
-      }, false);
+      var elm = document.getElementById("distanceValue");
+      elm.innerHTML = e.data;
+      var distance = parseFloat(e.data);
+      if (distance < currentValues.minDis || distance > currentValues.maxDis) {
+        elm.style.color = 'red';
+      }
+      else {
+        elm.style.color = 'black';
+      }
+    }, false);
 
-}
+    /**************************************** */
+  }
 
 
 
@@ -78,19 +85,20 @@ document.addEventListener("DOMContentLoaded", function () {
     minDis = document.getElementById("inputMinDis").value;
     maxDis = document.getElementById("inputMaxDis").value;
     offset = document.getElementById("inputOffset").value;
+    interval = document.getElementById("inputInterval").value;
 
-    if (minDis === "" || maxDis === "" || offset === "") {
+    if (minDis === "" || maxDis === "" || offset === "" || interval === "") {
       alert("Form bos olamaz!!");
     } else {
-      if (minDis == currentValues.minDis && maxDis == currentValues.maxDis && offset == currentValues.offset) {
+      if (minDis == currentValues.minDis && maxDis == currentValues.maxDis && offset == currentValues.offset && interval == currentValues.interval) {
         alert("degerler ayni. Parametre gönderimi yapamazsınız!");
       } else {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset, true);
+        xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset+ "&interval="+interval, true);
         xhr.onreadystatechange = function () {
           if (xhr.readyState == 4 && xhr.status == 200) {
             console.log('200 OK! Gönderim tamam.');
-            updateFormValues(minDis, maxDis, offset, currentValues.distance);
+            updateFormValues(minDis, maxDis, offset, currentValues.distance, interval);
           }
         };
         xhr.send();
@@ -99,16 +107,18 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 
-  function updateFormValues(minDis, maxDis, offset, distance) {
+  function updateFormValues(minDis, maxDis, offset, distance, interval) {
     currentValues.minDis = minDis;
     currentValues.maxDis = maxDis;
     currentValues.offset = offset;
     currentValues.distance = distance;
+    currentValues.interval = interval;
 
     document.getElementById("inputMinDis").value = minDis;
     document.getElementById("inputMaxDis").value = maxDis;
     document.getElementById("inputOffset").value = offset;
     document.getElementById("distanceValue").innerText = "distance: " + distance;
+    document.getElementById("inputInterval").value = interval;
     updateProgressBar();
   }
 
@@ -124,45 +134,44 @@ document.addEventListener("DOMContentLoaded", function () {
         currentValues.maxDis = doc.getElementById('inputMaxDis').value;
         currentValues.offset = doc.getElementById('inputOffset').value;
         currentValues.distance = doc.getElementById('distanceValue').innerText.split(': ')[1];
-
-        updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance);
+        currentValues.interval = doc.getElementById('inputInterval').value;
+        updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval);
         updateProgressBar();
       }
     };
     xhr.send();
   }
 
-  
-    function updateProgressBar() {
-      var elmBlack = document.getElementById('black-segment');
-      var elmGreen = document.getElementById('green-segment');
-      var elmOffset = document.getElementById('offset-segment');
-  
-      elmBlack.style.width = (blackSegmentWidth / totalUnits * 100) + '%';
-  
-      var greenSegmentStart = currentValues.minDis / totalUnits * 100;
-      var greenSegmentWidth = (currentValues.maxDis - currentValues.minDis) / totalUnits * 100;
-  
-      if (currentValues.offset > 0) {
-        var offsetStart = (currentValues.maxDis / totalUnits * 100);
-        var offsetWidth = currentValues.offset / totalUnits * 100;
-  
-        elmOffset.style.left = offsetStart + '%';
-        elmOffset.style.width = offsetWidth + '%';
-        elmOffset.style.backgroundColor = '#FFB90F';
-  
-      } else {
-        var offsetWidth = -currentValues.offset / totalUnits * 100;
-        var offsetStart = (currentValues.maxDis / totalUnits * 100) - offsetWidth;
-  
-        elmOffset.style.left = offsetStart + '%';
-        elmOffset.style.width = offsetWidth + '%';
-        elmOffset.style.backgroundColor = 'red';
-      }
-  
-      elmGreen.style.left = greenSegmentStart + '%';
-      elmGreen.style.width = greenSegmentWidth + '%';
-      elmGreen.innerText = "Min: " + currentValues.minDis + "mm - Max: " + currentValues.maxDis + "mm";
+
+  function updateProgressBar() {
+    var elmBlack = document.getElementById('black-segment');
+    var elmGreen = document.getElementById('green-segment');
+    var elmOffset = document.getElementById('offset-segment');
+
+    elmBlack.style.width = (blackSegmentWidth / totalUnits * 100) + '%';
+
+    var greenSegmentStart = currentValues.minDis / totalUnits * 100;
+    var greenSegmentWidth = (currentValues.maxDis - currentValues.minDis) / totalUnits * 100;
+
+    if (currentValues.offset > 0) {
+      var offsetStart = (currentValues.maxDis / totalUnits * 100);
+      var offsetWidth = currentValues.offset / totalUnits * 100;
+
+      elmOffset.style.left = offsetStart + '%';
+      elmOffset.style.width = offsetWidth + '%';
+      elmOffset.style.backgroundColor = '#FFB90F';
+
+    } else {
+      var offsetWidth = -currentValues.offset / totalUnits * 100;
+      var offsetStart = (currentValues.maxDis / totalUnits * 100) - offsetWidth;
+
+      elmOffset.style.left = offsetStart + '%';
+      elmOffset.style.width = offsetWidth + '%';
+      elmOffset.style.backgroundColor = 'red';
     }
-  });
-  
+
+    elmGreen.style.left = greenSegmentStart + '%';
+    elmGreen.style.width = greenSegmentWidth + '%';
+    elmGreen.innerText = "Min: " + currentValues.minDis + "mm - Max: " + currentValues.maxDis + "mm";
+  }
+});
