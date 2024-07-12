@@ -1,64 +1,42 @@
 #include <WiFi.h>
+#include <WiFiAP.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 #include <AsyncTCP.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
-// Replace with your network credentials
+#include <Preferences.h>
+
+Preferences preferences;
+
+const char* resetNamespace = "reset";
+const char* firstRunKey = "firstRun";
+const char* mindisKey = "mindisValue";
+const char* maxdisKey = "maxdisValue";
+const char* offsetKey = "offsetValue";
+//const char* intervalKey = "intervalValue";
+
+// Seri iletişim ayarları
+#define RXD2 16
+#define TXD2 17
+
 const char* ssid = "DmR 2.4";
 const char* password = "12231551";
 
 const char* PARAM_INPUT = "value";
 const char* PARAM_INPUT1 = "maxdis";
 const char* PARAM_INPUT2 = "offset";
-String sliderValue = "44";
-String maxdisValue = "356";
-String offsetValue = "3";
-float randomValue = 0.0; // Rastgele değer için değişken
+String mindisValue = "3";
+String maxdisValue = "400";
+String offsetValue = "0";
+const long interval = 0;
 
-AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
+unsigned long previousMillis = 0;
 
-String processor(const String& var) {
-  if (var == "SLIDERVALUE") return sliderValue;
-  if (var == "MAXDISVALUE") return maxdisValue;
-  if (var == "OFFSETVALUE") return offsetValue;
-  if (var == "RANDOMVALUE") return String(randomValue);
-  return String();
-}
 
-void notifyClients() {
-  String message = "MinDis: " + sliderValue + "/MaxDis: " + maxdisValue + "/Offset: " + offsetValue + "/Random: " + String(randomValue);
-  ws.textAll(message);
-}
-
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
-  AwsFrameInfo *info = (AwsFrameInfo*)arg;
-  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-    data[len] = 0;
-    if (strcmp((char*)data, "getValues") == 0) {
-      notifyClients();
-    }
-  }
-}
-
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-  switch (type) {
-    case WS_EVT_CONNECT:
-      Serial.println("WebSocket client connected");
-      break;
-    case WS_EVT_DISCONNECT:
-      Serial.println("WebSocket client disconnected");
-      break;
-    case WS_EVT_DATA:
-      handleWebSocketMessage(arg, data, len);
-      break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-      break;
-  }
-}
+unsigned char data[4] = {};
+float distance;
 
 
 // OLED ekran ayarları
@@ -67,32 +45,85 @@ const int SCREEN_HEIGHT = 64;
 const int OLED_ADDRESS = 0x3C;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire);
 
+AsyncWebServer server(80);
+AsyncEventSource events("/events");
+
+String processor(const String& var) {
+  if (var == "MINDISVALUE") {
+    return mindisValue;
+  }
+  else if (var == "MAXDISVALUE") {
+    return maxdisValue;
+  }
+  else if (var == "OFFSETVALUE") {
+    return offsetValue;
+  }
+  else if (var == "DISTANCEVALUE") {
+    return String(distance);
+  }
+  return String();
+}
+
+
+
 // Hareketli ortalama için ayarlar
 const int NUM_READINGS = 5;
 float readings[NUM_READINGS];
 int currentIndex = 0;
 float total = 0.0;
 
-// Buton pinleri
-const int buttonPins[] = {36, 39, 34, 35};
-const int NUM_BUTTONS = sizeof(buttonPins) / sizeof(buttonPins[0]);
-int buttonStates[NUM_BUTTONS];
 
-// Seri iletişim ayarları
-#define RXD2 16
-#define TXD2 17
-
-unsigned char data[4] = {};
-float distance;
 
 
 // Parametreler
-float minDis = 3.0;
-float maxDis = 400.0;
-float offset = 0.0;
+float minDis;
+float maxDis;
+float offset;
 
+
+IPAddress local_IP(192, 168, 1, 140); // ESP32'nin IP adresi
+IPAddress gateway(192, 168, 1, 1); // Genelde yönlendiricinin IP adresi
+IPAddress subnet(255, 255, 255, 0);
+IPAddress primaryDNS(8, 8, 8, 8);   // Google DNS
+IPAddress secondaryDNS(8, 8, 4, 4);
 
 void setup() {
+
+  // EEPROM
+  preferences.begin(resetNamespace, false);
+
+  // ilk mi
+  if (!preferences.getBool(firstRunKey, false)) {
+    Serial.println("First run...");
+
+
+    preferences.putString(mindisKey, mindisValue);
+    preferences.putString(maxdisKey, maxdisValue);
+    preferences.putString(offsetKey, offsetValue);
+
+
+    preferences.putBool(firstRunKey, true);
+
+    delay(2000);
+    // Cihazı resetle
+    ESP.restart();
+  } else {
+    Serial.println("loading saved values...");
+
+    // Load the saved values from Preferences
+    mindisValue = preferences.getString(mindisKey, "3");
+    maxdisValue = preferences.getString(maxdisKey, "400");
+    offsetValue = preferences.getString(offsetKey, "0");
+  }
+
+  // Display the values
+  Serial.println("Min Distance: " + mindisValue);
+  Serial.println("Max Distance: " + maxdisValue);
+  Serial.println("Offset: " + offsetValue);
+
+  preferences.end();
+
+  setParam(mindisValue, maxdisValue, offsetValue);
   // OLED ekran başlatma
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
   display.clearDisplay();
@@ -104,20 +135,24 @@ void setup() {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi..");
   }
-
+  if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+    Serial.println("STA Failed to configure");
+  }
   Serial.println(WiFi.localIP());
 
-  ws.onEvent(onEvent);
-  server.addHandler(&ws);
+
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send(SPIFFS, "/index.html", String(), false, processor);
+    AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html", String(), false, processor);
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
+    //request->send(SPIFFS, "/index.html", String(), false, processor);
   });
 
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -128,55 +163,60 @@ void setup() {
     request->send(SPIFFS, "/main.js", "text/javascript");
   });
 
-  server.on("/slider", HTTP_GET, [](AsyncWebServerRequest * request) {
+  server.on("/param", HTTP_GET, [](AsyncWebServerRequest * request) {
     String inputMessage;
     if (request->hasParam(PARAM_INPUT) && request->hasParam(PARAM_INPUT1) && request->hasParam(PARAM_INPUT2)) {
-      inputMessage = request->getParam(PARAM_INPUT)->value();
-      sliderValue = inputMessage;
-      inputMessage = request->getParam(PARAM_INPUT1)->value();
-      maxdisValue = inputMessage;
-      inputMessage = request->getParam(PARAM_INPUT2)->value();
-      offsetValue = inputMessage;
+
+      String p1 = request->getParam(PARAM_INPUT)->value();
+      String p2 = request->getParam(PARAM_INPUT1)->value();
+      String p3 = request->getParam(PARAM_INPUT2)->value();
+      events.send(String(p1).c_str(), "MinDis", millis());
+      events.send(String(p2).c_str(), "MaxDis", millis());
+      events.send(String(p3).c_str(), "OffsetVal", millis());
+      writeEeprom(p1, p2, p3);
+      setParam(p1, p2, p3);
     } else {
       inputMessage = "No message sent";
     }
-    Serial.println("MinDis: " + sliderValue + "/MaxDis: " + maxdisValue + "/Offset: " + offsetValue);
+    Serial.println("MinDis: " + mindisValue + "/MaxDis: " + maxdisValue + "/Offset: " + offsetValue);
     request->send(200, "text/plain", "OK");
-    notifyClients();
+
+  });
+
+  // Handle Web Server Events
+  events.onConnect([](AsyncEventSourceClient * client) {
+    if (client->lastId()) {
+      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+    }
+    client->send("hello!", NULL, millis(), 1000);
   });
 
 
-  randomSeed(analogRead(0)); // Rastgele sayı üretmek için seed oluştur
-
+  server.addHandler(&events);
   server.begin();
-  // Buton pinlerini giriş olarak ayarlama
-  for (int i = 0; i < NUM_BUTTONS; i++) {
-    pinMode(buttonPins[i], INPUT);
-  }
+
+
+
 }
 
 void loop() {
   // Ultrasonik sensör verilerini okuma
+  unsigned long currentMillis = millis();
   if (readSensorData()) {
-
     if (distance > minDis * 10 && distance < maxDis * 10 ) {
-/*
-      Serial.print("Distance: ");
-      Serial.println(distance / 10);
-*/
       // Hareketli ortalama hesaplama
       updateMovingAverage(distance / 10);
       float average = total / NUM_READINGS;
-      randomValue = distance / 10;
-      /*
-      // Ortalamayı seri porta yazdırma
-      Serial.print("Moving Average: ");
-      Serial.print(average, 2);
-      Serial.println(" cm");
-      */
-      
+      // 2 saniyede bir veri gönder
+
+      if (currentMillis - previousMillis >= interval) {
+        previousMillis = currentMillis;
+        events.send(String(distance / 10).c_str(), "DistanceVal", millis());
+      }
+
     } else {
-      Serial.println("Exceeding the lower or upper limit");
+      Serial.println("Exceeding the lower or upper limit :" + String(distance / 10) + "min:" + String(minDis) + "max:" + String(maxDis));
+      events.send(String(distance / 10).c_str(), "DistanceVal", millis());
     }
   } else {
     Serial.println("ERROR");
@@ -186,11 +226,7 @@ void loop() {
   display.clearDisplay();
   displayText(String(distance / 10), 10, 10);
 
-  // Buton durumlarını okuma
-  readButtonStates();
-  notifyClients(); // WebSocket üzerinden istemcilere rastgele sayıyı gönder
-  ws.cleanupClients();
-  delay(3);  // 100ms bekleyerek ölçüm tekrarı
+  delay(3);
 }
 
 // Sensör verilerini okuma fonksiyonu
@@ -198,11 +234,9 @@ bool readSensorData() {
   while (Serial2.available() < 4) {
     // Verinin tamamlanmasını bekliyoruz
   }
-
   for (int i = 0; i < 4; i++) {
     data[i] = Serial2.read();
   }
-
   if (data[0] == 0xff) {
     int sum = (data[0] + data[1] + data[2]) & 0x00FF;
     if (sum == data[3]) {
@@ -213,6 +247,31 @@ bool readSensorData() {
   return false;
 }
 
+void setParam(String p1, String p2, String p3) {
+  minDis = p1.toFloat();
+  maxDis = p2.toFloat();
+  offset = p3.toFloat();
+}
+
+void writeEeprom(String p1, String p2, String p3) {
+  preferences.begin(resetNamespace, false);
+  if (p1 != mindisValue) {
+    mindisValue = p1;
+    preferences.putString(mindisKey, p1);
+  }
+  if (p2 != maxdisValue) {
+    maxdisValue = p2;
+    preferences.putString(maxdisKey, p2);
+  }
+  if (p3 != offsetValue) {
+    offsetValue = p3;
+    preferences.putString(offsetKey, p3);
+  }
+  preferences.end();
+  delay(2000);
+}
+
+
 // Hareketli ortalama güncelleme fonksiyonu
 void updateMovingAverage(float newValue) {
   total = total - readings[currentIndex] + newValue;
@@ -220,17 +279,7 @@ void updateMovingAverage(float newValue) {
   currentIndex = (currentIndex + 1) % NUM_READINGS;
 }
 
-// Buton durumlarını okuma ve seri porta yazdırma fonksiyonu
-void readButtonStates() {
-  for (int i = 0; i < NUM_BUTTONS; i++) {
-    buttonStates[i] = digitalRead(buttonPins[i]);
-    if (buttonStates[i] == HIGH) {
-      Serial.print("Button ");
-      Serial.print(i + 1);
-      Serial.println(" pressed.");
-    }
-  }
-}
+
 
 // OLED ekranda metin yazdırma fonksiyonu
 void displayText(String text, int x, int y) {

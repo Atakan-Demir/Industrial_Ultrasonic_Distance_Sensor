@@ -6,51 +6,70 @@ document.addEventListener("DOMContentLoaded", function () {
     minDis: null,
     maxDis: null,
     offset: null,
-    random: null
+    distance: null
   };
 
   var minDis;
   var maxDis;
   var offset;
-  var random;
+  var distance;
 
   //bar
   var totalUnits = 400;
   var blackSegmentWidth = 3;
 
-  const gateway = `ws://${window.location.hostname}/ws`;
-  let websocket;
 
   window.addEventListener('load', onLoad);
 
-  function initWebSocket() {
-    websocket = new WebSocket(gateway);
-    websocket.onopen = onOpen;
-    websocket.onclose = onClose;
-    websocket.onmessage = onMessage;
-  }
+  if (!!window.EventSource) {
+    var source = new EventSource('/events');
 
-  function onOpen(event) {
-    console.log('Connection opened');
-    websocket.send("getValues");
-  }
+    source.addEventListener('open', function (e) {
+        console.log("Events Connected");
+    }, false);
+    source.addEventListener('error', function (e) {
+        if (e.target.readyState != EventSource.OPEN) {
+            console.log("Events Disconnected");
+        }
+    }, false);
 
-  function onClose(event) {
-    console.log('Connection closed');
-    setTimeout(initWebSocket, 2000);
-  }
+    source.addEventListener('message', function (e) {
+        console.log("message", e.data);
+    }, false);
 
-  function onMessage(event) {
-    const data = event.data.split('/');
-    const minDis = data[0].split(': ')[1];
-    const maxDis = data[1].split(': ')[1];
-    const offset = data[2].split(': ')[1];
-    const random = data[3].split(': ')[1];
-    updateFormValues(minDis, maxDis, offset, random);
-  }
+
+
+    source.addEventListener('MinDis', function (e) {
+        document.getElementById("inputMinDis").value = e.data;
+    }, false);
+
+    source.addEventListener('MaxDis', function (e) {
+        document.getElementById("inputMaxDis").value = e.data;
+    }, false);
+
+    source.addEventListener('OffsetVal', function (e) {
+        document.getElementById("inputOffset").value = e.data;
+    }, false);
+
+    source.addEventListener('DistanceVal', function (e) {
+        var elm = document.getElementById("distanceValue");
+        elm.innerHTML = e.data;
+        var distance = parseFloat(e.data);
+        if (distance<currentValues.minDis||distance>currentValues.maxDis) {
+          elm.style.color='red';
+        }
+        else{
+          elm.style.color='black';
+        }
+      }, false);
+
+}
+
+
+
 
   function onLoad(event) {
-    initWebSocket();
+
     loadInitialValues();
   }
 
@@ -67,11 +86,11 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("degerler ayni. Parametre gönderimi yapamazsınız!");
       } else {
         var xhr = new XMLHttpRequest();
-        xhr.open("GET", "/slider?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset, true);
+        xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset, true);
         xhr.onreadystatechange = function () {
           if (xhr.readyState == 4 && xhr.status == 200) {
             console.log('200 OK! Gönderim tamam.');
-            updateFormValues(minDis, maxDis, offset, currentValues.random);
+            updateFormValues(minDis, maxDis, offset, currentValues.distance);
           }
         };
         xhr.send();
@@ -79,20 +98,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  refreshBTN.addEventListener("click", (e) => {
-    location.reload();
-  });
 
-  function updateFormValues(minDis, maxDis, offset, random) {
+  function updateFormValues(minDis, maxDis, offset, distance) {
     currentValues.minDis = minDis;
     currentValues.maxDis = maxDis;
     currentValues.offset = offset;
-    currentValues.random = random;
+    currentValues.distance = distance;
 
     document.getElementById("inputMinDis").value = minDis;
     document.getElementById("inputMaxDis").value = maxDis;
     document.getElementById("inputOffset").value = offset;
-    document.getElementById("randomValue").innerText = "Random: " + random;
+    document.getElementById("distanceValue").innerText = "distance: " + distance;
     updateProgressBar();
   }
 
@@ -107,9 +123,9 @@ document.addEventListener("DOMContentLoaded", function () {
         currentValues.minDis = doc.getElementById('inputMinDis').value;
         currentValues.maxDis = doc.getElementById('inputMaxDis').value;
         currentValues.offset = doc.getElementById('inputOffset').value;
-        currentValues.random = doc.getElementById('randomValue').innerText.split(': ')[1];
+        currentValues.distance = doc.getElementById('distanceValue').innerText.split(': ')[1];
 
-        updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.random);
+        updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance);
         updateProgressBar();
       }
     };
