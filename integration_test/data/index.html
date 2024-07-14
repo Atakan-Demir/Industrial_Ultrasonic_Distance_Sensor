@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,7 +28,11 @@
             <div class="content">
                 <h2>Distance</h2>
                 <h3 id="distanceValue">%DISTANCEVALUE%</h3>
-                <h4>cm</h4>
+       
+
+                <h2>Offset Percent </h2>
+                <h3 id="percentValue">%PERCENTVALUE%</h3>
+
 
                 
             </div>
@@ -41,15 +46,15 @@
 
                     <div class="parameter">
                         <label id="minDis">Minimum Distance (mm)</label>
-                        <input type="number" class="form-control" name="minumumdistance" id="inputMinDis" value="%MINDISVALUE%" min="3" max="399" required>
+                        <input type="number" class="form-control" name="minumumdistance" id="inputMinDis" value="%MINDISVALUE%" min="30" max="3990" required>
                     </div>
                     <div class="parameter">
                         <label id="minDis">Maximum Distance (mm)</label>
-                        <input type="number" class="form-control" name="maximumdistance" id="inputMaxDis" value="%MAXDISVALUE%" min="4" max="400" required>
+                        <input type="number" class="form-control" name="maximumdistance" id="inputMaxDis" value="%MAXDISVALUE%" min="40" max="4000" required>
                     </div>
                     <div class="parameter">
                         <label id="minDis">Offset Distance (mm)</label>
-                        <input type="number" class="form-control" name="offset" id="inputOffset" value="%OFFSETVALUE%" min="-50" max="50" required>
+                        <input type="number" class="form-control" name="offset" id="inputOffset" value="%OFFSETVALUE%" min="-500" max="500" required>
                     </div>
                     <div class="parameter">
                         <label id="minDis">Interval Time (ms)</label>

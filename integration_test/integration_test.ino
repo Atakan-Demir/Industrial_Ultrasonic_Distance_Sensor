@@ -15,6 +15,7 @@ const char* firstRunKey = "firstRun";
 const char* mindisKey = "mindisValue";
 const char* maxdisKey = "maxdisValue";
 const char* offsetKey = "offsetValue";
+const char* percentKey = "percentValue";
 const char* intervalKey = "intervalValue";
 
 // Seri iletişim ayarları
@@ -28,9 +29,10 @@ const char* PARAM_INPUT = "value";
 const char* PARAM_INPUT1 = "maxdis";
 const char* PARAM_INPUT2 = "offset";
 const char* PARAM_INPUT3 = "interval";
-String mindisValue = "3";
-String maxdisValue = "400";
+String mindisValue = "30";
+String maxdisValue = "4000";
 String offsetValue = "0";
+String percentValue = "0.0";
 unsigned long interval = 0;
 
 unsigned long previousMillis = 0;
@@ -65,6 +67,9 @@ String processor(const String& var) {
   else if (var == "INTERVALVALUE") {
     return String(interval);
   }
+  else if (var == "PERCENTVALUE") {
+    return percentValue;
+  }
   return String();
 }
 
@@ -83,6 +88,7 @@ float total = 0.0;
 float minDis;
 float maxDis;
 float offset;
+float percent;
 
 
 IPAddress local_IP(192, 168, 1, 140); // ESP32'nin IP adresi
@@ -104,6 +110,7 @@ void setup() {
     preferences.putString(mindisKey, mindisValue);
     preferences.putString(maxdisKey, maxdisValue);
     preferences.putString(offsetKey, offsetValue);
+    preferences.putString(percentKey, percentValue);
     preferences.putULong(intervalKey, interval);
 
     preferences.putBool(firstRunKey, true);
@@ -115,21 +122,16 @@ void setup() {
     //Serial.println("loading saved values...");
 
     // Load the saved values from Preferences
-    mindisValue = preferences.getString(mindisKey, "3");
-    maxdisValue = preferences.getString(maxdisKey, "400");
+    mindisValue = preferences.getString(mindisKey, "30");
+    maxdisValue = preferences.getString(maxdisKey, "4000");
     offsetValue = preferences.getString(offsetKey, "0");
+    percentValue = preferences.getString(percentKey, "0.0");
     interval = preferences.getULong(intervalKey, 0);
   }
 
-  // Display the values
-  Serial.println("Min Distance: " + mindisValue);
-  Serial.println("Max Distance: " + maxdisValue);
-  Serial.println("Offset: " + offsetValue);
-  Serial.println("Interval: " + interval);
-
   preferences.end();
 
-  setParam(mindisValue, maxdisValue, offsetValue, interval);
+  setParam(mindisValue, maxdisValue, offsetValue, interval,percentValue);
 
   // OLED ekran başlatma
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
@@ -138,7 +140,7 @@ void setup() {
   // Seri portları başlatma
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
-  Serial.println("1. interval: " + interval);
+  //Serial.println("1. interval: " + interval);
 
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
@@ -178,7 +180,7 @@ void setup() {
 
       String p1 = request->getParam(PARAM_INPUT)->value();
       String p2 = request->getParam(PARAM_INPUT1)->value();
-      String p3 = request->getParam(PARAM_INPUT2)->value();
+      String p3 = request->getParam(PARAM_INPUT2)->value(); //offset
       String p4 = request->getParam(PARAM_INPUT3)->value();
       events.send(String(p1).c_str(), "MinDis", millis());
       events.send(String(p2).c_str(), "MaxDis", millis());
@@ -187,7 +189,7 @@ void setup() {
       unsigned long p4_ULong = strtoul(p4.c_str(), NULL, 10);
 
       writeEeprom(p1, p2, p3, p4_ULong);
-      setParam(p1, p2, p3, p4_ULong);
+      setParam(p1, p2, p3, p4_ULong,percentValue);
     } else {
       inputMessage = "No message sent";
     }
@@ -210,21 +212,24 @@ void setup() {
 
 
 
+  delay(5000);
+  Serial2.flush();
 }
 
 void loop() {
+  Serial2.flush();
   // Ultrasonik sensör verilerini okuma
   unsigned long currentMillis = millis();
   if (readSensorData()) {
-    if (distance > minDis * 10 && distance < maxDis * 10 ) {
+    if (distance + distance * percent  > minDis && distance + distance * percent < maxDis ) {
       // Hareketli ortalama hesaplama
-      updateMovingAverage(distance / 10);
+      updateMovingAverage((distance + distance * percent) / 10);
       float average = total / NUM_READINGS;
-      // 2 saniyede bir veri gönder
+      Serial.println("distance : " +String(distance / 10));
 
       if (currentMillis - previousMillis >= interval) {
         previousMillis = currentMillis;
-        events.send(String(distance / 10).c_str(), "DistanceVal", millis());
+        events.send(String((distance + distance * percent) / 10).c_str(), "DistanceVal", millis());
       }
 
     } else {
@@ -242,14 +247,26 @@ void loop() {
   delay(3);
 }
 
+
+float calcOffset(float dist, String off) {
+
+  return off.toFloat() / dist;
+
+}
+
 // Sensör verilerini okuma fonksiyonu
 bool readSensorData() {
-  while (Serial2.available() < 4) {
-    // Verinin tamamlanmasını bekliyoruz
-  }
-  for (int i = 0; i < 4; i++) {
-    data[i] = Serial2.read();
-  }
+
+  do {
+    for (int i = 0; i < 4; i++)
+    {
+      data[i] = Serial2.read();
+    }
+  } while (Serial2.read() == 0xff);
+
+
+  Serial2.flush();
+
   if (data[0] == 0xff) {
     int sum = (data[0] + data[1] + data[2]) & 0x00FF;
     if (sum == data[3]) {
@@ -260,11 +277,13 @@ bool readSensorData() {
   return false;
 }
 
-void setParam(String p1, String p2, String p3, unsigned long p4) {
+void setParam(String p1, String p2, String p3, unsigned long p4,String p5) {
   minDis = p1.toFloat();
   maxDis = p2.toFloat();
   offset = p3.toFloat();
   interval = p4;
+  percent = p5.toFloat();
+
 }
 
 void writeEeprom(String p1, String p2, String p3, unsigned long p4) {
@@ -279,7 +298,14 @@ void writeEeprom(String p1, String p2, String p3, unsigned long p4) {
   }
   if (p3 != offsetValue) {
     offsetValue = p3;
+    percent = calcOffset(distance, offsetValue);
+    Serial.print("PERCENT: ");
+    Serial.println(percentValue);
+    percentValue = String(percent);
+    
     preferences.putString(offsetKey, p3);
+    preferences.putString(percentKey, percentValue);
+
   }
   if (p4 != interval) {
     interval = p4;
@@ -288,6 +314,7 @@ void writeEeprom(String p1, String p2, String p3, unsigned long p4) {
 
   preferences.end();
   delay(2000);
+  events.send(percentValue.c_str(), "PercentVal", millis());
 
 }
 

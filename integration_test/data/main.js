@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
     maxDis: null,
     offset: null,
     interval: null,
-    distance: null
+    distance: null,
+    percent: null
   };
 
   var minDis;
@@ -15,10 +16,11 @@ document.addEventListener("DOMContentLoaded", function () {
   var offset;
   var interval;
   var distance;
+  var percent;
 
   //bar
-  var totalUnits = 400;
-  var blackSegmentWidth = 3;
+  var totalUnits = 4000;
+  var blackSegmentWidth = 30;
 
 
   window.addEventListener('load', onLoad);
@@ -56,6 +58,13 @@ document.addEventListener("DOMContentLoaded", function () {
     source.addEventListener('IntervalVal', function (e) {
       document.getElementById("inputInterval").value = e.data;
     }, false);
+    source.addEventListener('PercentVal', function (e) {
+        currentValues.percent = parseFloat(e.data);
+        percent = parseFloat(e.data);
+        document.getElementById("percentValue").innerHTML = e.data;
+
+    }, false);
+
 
     source.addEventListener('DistanceVal', function (e) {
       var elm = document.getElementById("distanceValue");
@@ -87,6 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
     offset = document.getElementById("inputOffset").value;
     interval = document.getElementById("inputInterval").value;
 
+
     if (minDis === "" || maxDis === "" || offset === "" || interval === "") {
       alert("Form bos olamaz!!");
     } else {
@@ -98,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
         xhr.onreadystatechange = function () {
           if (xhr.readyState == 4 && xhr.status == 200) {
             console.log('200 OK! Gönderim tamam.');
-            updateFormValues(minDis, maxDis, offset, currentValues.distance, interval);
+            updateFormValues(minDis, maxDis, offset, currentValues.distance, interval,percent);
           }
         };
         xhr.send();
@@ -107,18 +117,23 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 
-  function updateFormValues(minDis, maxDis, offset, distance, interval) {
+  function updateFormValues(minDis, maxDis, offset, distance, interval,percent) {
     currentValues.minDis = minDis;
     currentValues.maxDis = maxDis;
     currentValues.offset = offset;
     currentValues.distance = distance;
     currentValues.interval = interval;
+    currentValues.percent = percent;
+
+
 
     document.getElementById("inputMinDis").value = minDis;
     document.getElementById("inputMaxDis").value = maxDis;
     document.getElementById("inputOffset").value = offset;
     document.getElementById("distanceValue").innerText = "distance: " + distance;
     document.getElementById("inputInterval").value = interval;
+    document.getElementById("percentValue").innerText = percent;
+    
     updateProgressBar();
   }
 
@@ -135,7 +150,8 @@ document.addEventListener("DOMContentLoaded", function () {
         currentValues.offset = doc.getElementById('inputOffset').value;
         currentValues.distance = doc.getElementById('distanceValue').innerText.split(': ')[1];
         currentValues.interval = doc.getElementById('inputInterval').value;
-        updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval);
+        currentValues.percent = doc.getElementById('percentValue').innerText;
+        updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent);
         updateProgressBar();
       }
     };
@@ -154,17 +170,23 @@ document.addEventListener("DOMContentLoaded", function () {
     var greenSegmentWidth = (currentValues.maxDis - currentValues.minDis) / totalUnits * 100;
 
     if (currentValues.offset > 0) {
+      
+
+
       var offsetStart = (currentValues.maxDis / totalUnits * 100);
-      var offsetWidth = currentValues.offset / totalUnits * 100;
+      //var offsetWidth = currentValues.offset / totalUnits * 100;
+      console.log("percent: "+currentValues.percent);
+      var offsetWidth = currentValues.percent * 100;
 
       elmOffset.style.left = offsetStart + '%';
       elmOffset.style.width = offsetWidth + '%';
       elmOffset.style.backgroundColor = '#FFB90F';
 
+      console.log("Offset : "+offsetStart + "Offset Width : "+offsetWidth);
     } else {
-      var offsetWidth = -currentValues.offset / totalUnits * 100;
+      var offsetWidth = -currentValues.percent * 100;
       var offsetStart = (currentValues.maxDis / totalUnits * 100) - offsetWidth;
-
+      console.log("Offset : "+offsetStart + "Offset Width : "+offsetWidth);
       elmOffset.style.left = offsetStart + '%';
       elmOffset.style.width = offsetWidth + '%';
       elmOffset.style.backgroundColor = 'red';
