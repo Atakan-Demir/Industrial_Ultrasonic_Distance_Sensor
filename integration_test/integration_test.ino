@@ -8,6 +8,13 @@
 #include <Adafruit_SSD1306.h>
 #include <Preferences.h>
 
+//modbus
+/*
+Modbus slave(1, Serial);
+
+uint16_t au16data[7];
+*/
+
 Preferences preferences;
 
 const char* resetNamespace = "reset";
@@ -75,27 +82,12 @@ String processor(const String& var) {
 
 
 
-// Hareketli ortalama için ayarlar
-const int NUM_READINGS = 5;
-float readings[NUM_READINGS];
-int currentIndex = 0;
-float total = 0.0;
-
-
-
-
 // Parametreler
 float minDis;
 float maxDis;
 float offset;
 float percent;
 
-
-IPAddress local_IP(192, 168, 1, 140); // ESP32'nin IP adresi
-IPAddress gateway(192, 168, 1, 1); // Genelde yönlendiricinin IP adresi
-IPAddress subnet(255, 255, 255, 0);
-IPAddress primaryDNS(8, 8, 8, 8);   // Google DNS
-IPAddress secondaryDNS(8, 8, 4, 4);
 
 void setup() {
 
@@ -137,6 +129,9 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
   display.clearDisplay();
 
+  //modbus
+  //Serial.begin(19200, SERIAL_8E1);
+
   // Seri portları başlatma
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
@@ -152,9 +147,7 @@ void setup() {
     delay(1000);
     Serial.println("Connecting to WiFi..");
   }
-  if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-    Serial.println("STA Failed to configure");
-  }
+  
   Serial.println(WiFi.localIP());
 
 
@@ -165,6 +158,10 @@ void setup() {
     request->send(response);
     //request->send(SPIFFS, "/index.html", String(), false, processor);
   });
+
+  server.on("/about",HTTP_GET,[](AsyncWebServerRequest * request){
+    request->send(SPIFFS, "/about.html", String(), false, processor);
+    });
 
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/style.css", "text/css");
@@ -212,20 +209,18 @@ void setup() {
 
 
 
-  delay(5000);
-  Serial2.flush();
+  
+  
 }
 
 void loop() {
-  Serial2.flush();
+  
   // Ultrasonik sensör verilerini okuma
   unsigned long currentMillis = millis();
   if (readSensorData()) {
     if (distance + distance * percent  > minDis && distance + distance * percent < maxDis ) {
-      // Hareketli ortalama hesaplama
-      updateMovingAverage((distance + distance * percent) / 10);
-      float average = total / NUM_READINGS;
-      Serial.println("distance : " +String(distance / 10));
+      
+      //Serial.println("distance : " +String(distance / 10));
 
       if (currentMillis - previousMillis >= interval) {
         previousMillis = currentMillis;
@@ -319,12 +314,6 @@ void writeEeprom(String p1, String p2, String p3, unsigned long p4) {
 }
 
 
-// Hareketli ortalama güncelleme fonksiyonu
-void updateMovingAverage(float newValue) {
-  total = total - readings[currentIndex] + newValue;
-  readings[currentIndex] = newValue;
-  currentIndex = (currentIndex + 1) % NUM_READINGS;
-}
 
 
 
