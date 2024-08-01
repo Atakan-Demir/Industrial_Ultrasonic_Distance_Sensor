@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="menu_documentation"></title>
+    <!-- fav icon -->
+    <link rel="icon" href="./assets/ico/favicon.ico" type="image/x-icon">
+    <!-- CSS only -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark sticky-top">
+        <div class="container">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar"
+                aria-labelledby="offcanvasDarkNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel" data-lang="menu_title"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="/" data-lang="menu_home"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/config" data-lang="menu_config"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active text-bg-dark" href="/doc" data-lang="menu_documentation"></a>
+                        </li>
+
+                    </ul>
+
+                </div>
+            </div>
+
+            <a class="navbar-brand ms-4 me-0" data-lang="header_title"></a>
+
+
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle d-flex justify-content-center align-items-center"
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="/assets/ico/flags/uk.png" style="width: 24px;">&nbsp; En
+                </button>
+                <ul class="dropdown-menu dropdown-menu-lg-end">
+                    <li><button class="dropdown-item" type="button" data-lang="en"><img
+                                src="/assets/ico/flags/uk.png" style="width: 24px;">&nbsp; En</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="de"><img
+                                src="/assets/ico/flags/germany.png" style="width: 24px;">&nbsp; De</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="tr"><img
+                                src="/assets/ico/flags/turkey.png" style="width: 24px;">&nbsp; Tr</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="fr"><img
+                                src="/assets/ico/flags/france.png" style="width: 24px;">&nbsp; Fr</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="es"><img
+                                src="/assets/ico/flags/spain.png" style="width: 24px;">&nbsp; Es</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="it"><img
+                                src="/assets/ico/flags/italy.png" style="width: 24px;">&nbsp; It</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="ja"><img
+                                src="/assets/ico/flags/japan.png" style="width: 24px;">&nbsp; Ja</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="zh"><img
+                                src="/assets/ico/flags/china.png" style="width: 24px;">&nbsp; Cn</button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Industrial Ultrasonic Sensor Documentation</h1>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Description</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Measurement Range</td>
+                        <td>The distance range within which the sensor can accurately measure objects.</td>
+                        <td>100mm - 3500mm</td>
+                    </tr>
+                    <tr>
+                        <td>Resolution</td>
+                        <td>The smallest detectable change in distance.</td>
+                        <td>0.1mm</td>
+                    </tr>
+                    <tr>
+                        <td>Frequency</td>
+                        <td>The frequency at which the sensor operates.</td>
+                        <td>40 kHz</td>
+                    </tr>
+                    <tr>
+                        <td>Operating Temperature</td>
+                        <td>The temperature range within which the sensor can function properly.</td>
+                        <td>-20°C to 70°C</td>
+                    </tr>
+                    <tr>
+                        <td>Output Type</td>
+                        <td>The type of signal the sensor outputs.</td>
+                        <td>Analog / Digital</td>
+                    </tr>
+                    <tr>
+                        <td>Power Supply</td>
+                        <td>The voltage required to operate the sensor.</td>
+                        <td>5V DC</td>
+                    </tr>
+                    <tr>
+                        <td>Accuracy</td>
+                        <td>The degree of closeness of measurements to the actual value.</td>
+                        <td>±1% of full scale</td>
+                    </tr>
+                    <tr>
+                        <td>Dimensions</td>
+                        <td>The physical size of the sensor.</td>
+                        <td>40mm x 20mm x 15mm</td>
+                    </tr>
+                    <tr>
+                        <td>Weight</td>
+                        <td>The mass of the sensor.</td>
+                        <td>50g</td>
+                    </tr>
+                    <tr>
+                        <td>Material</td>
+                        <td>The material the sensor is made from.</td>
+                        <td>ABS Plastic</td>
+                    </tr>
+                    <tr>
+                        <td>Mounting Type</td>
+                        <td>How the sensor is mounted or installed.</td>
+                        <td>Panel Mount</td>
+                    </tr>
+                    <tr>
+                        <td>Response Time</td>
+                        <td>The time taken for the sensor to respond to a detected object.</td>
+                        <td>50ms</td>
+                    </tr>
+                    <tr>
+                        <td>Certification</td>
+                        <td>Standards and certifications the sensor complies with.</td>
+                        <td>CE, RoHS</td>
+                    </tr>
+                    <tr>
+                        <td>Applications</td>
+                        <td>Common use cases for the sensor.</td>
+                        <td>Level measurement, distance measurement, object detection</td>
+                    </tr>
+                    <tr>
+                        <td>Features</td>
+                        <td>Key features of the sensor.</td>
+                        <td>Waterproof, Dustproof, Robust design</td>
+                    </tr>
+                    <tr>
+                        <td>Notes</td>
+                        <td>Additional information or comments about the sensor.</td>
+                        <td>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                            labore et dolore magna aliqua.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="card-body text-center">
+                <a href="docs/documentation_en.pdf" class="link mb-2" download>Download English Documentation</a>
+                <a href="docs/documentation_de.pdf" class="btn btn-primary mb-2" download>Download German
+                    Documentation</a>
+                <a href="docs/documentation_tr.pdf" class="btn btn-primary mb-2" download>Download Turkish
+                    Documentation</a>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="./js/bootstrap.bundle.min.js"></script>
+
+    <script type="module" src="./js/main.js"></script>
+</body>
+
+</html>

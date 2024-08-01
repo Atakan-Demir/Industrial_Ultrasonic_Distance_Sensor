@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="menu_config"></title>
+    <!-- fav icon -->
+    <link rel="icon" href="./assets/ico/favicon.ico" type="image/x-icon">
+    <!-- CSS only -->
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark bg-dark sticky-top">
+        <div class="container">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasDarkNavbar" aria-controls="offcanvasDarkNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="offcanvasDarkNavbar"
+                aria-labelledby="offcanvasDarkNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasDarkNavbarLabel" data-lang="menu_title"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="/" data-lang="menu_home"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active text-bg-dark" href="/config" data-lang="menu_config"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/doc" data-lang="menu_documentation"></a>
+                        </li>
+
+                    </ul>
+
+                </div>
+            </div>
+
+            <a class="navbar-brand ms-4 me-0" data-lang="header_title"></a>
+
+
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle d-flex justify-content-center align-items-center"
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="/assets/ico/flags/uk.png" style="width: 24px;">&nbsp; En
+                </button>
+                <ul class="dropdown-menu dropdown-menu-lg-end">
+                    <li><button class="dropdown-item" type="button" data-lang="en"><img src="/assets/ico/flags/uk.png"
+                                style="width: 24px;">&nbsp; En</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="de"><img
+                                src="/assets/ico/flags/germany.png" style="width: 24px;">&nbsp; De</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="tr"><img
+                                src="/assets/ico/flags/turkey.png" style="width: 24px;">&nbsp; Tr</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="fr"><img
+                                src="/assets/ico/flags/france.png" style="width: 24px;">&nbsp; Fr</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="es"><img
+                                src="/assets/ico/flags/spain.png" style="width: 24px;">&nbsp; Es</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="it"><img
+                                src="/assets/ico/flags/italy.png" style="width: 24px;">&nbsp; It</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="ja"><img
+                                src="/assets/ico/flags/japan.png" style="width: 24px;">&nbsp; Ja</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="zh"><img
+                                src="/assets/ico/flags/china.png" style="width: 24px;">&nbsp; Cn</button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Sensor Configuration</h1>
+
+        <form id="paraForm">
+            <!-- Parametre Ayarları -->
+            <h6 id="trans" style="position: absolute;">%TRANSISTORVALUE%</h6>
+            <div class="card mb-4">
+                <div class="card-header card-head-text text-center">
+                    <div>Parametre Ayarları</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="inputMinDis" class="form-label fw-bolder">Minimum Distance (mm)</label>
+                            <input type="number" class="form-control" id="inputMinDis" value="%MINDISVALUE%" min="30"
+                                max="3990" required placeholder="Enter minimum distance">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="inputMaxDis" class="form-label fw-bolder">Maximum Distance (mm)</label>
+                            <input type="number" class="form-control" id="inputMaxDis" value="%MAXDISVALUE%" min="40"
+                                max="4000" required placeholder="Enter maximum distance">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="inputOffset" class="form-label fw-bolder">Offset (mm)</label>
+                            <input type="number" class="form-control" id="inputOffset" value="%OFFSETVALUE%" min="-500"
+                                max="500" required placeholder="Enter offset">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="inputInterval" class="form-label fw-bolder">Interval (ms)</label>
+                            <input type="number" class="form-control" id="inputInterval" value="%INTERVALVALUE%" min="0"
+                                max="3600000" required placeholder="Enter interval">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Çıkış Seçenekleri -->
+            <h6 id="out" style="position: absolute;">%OUTPUTTYPEVALUE%</h6>
+            <h6 id="outRev" style="position: absolute;">%OUTPUTREVVALUE%</h6>
+
+            <div class="card mb-4">
+                <div class="card-header card-head-text text-center">
+                    <div>Çıkış Seçenekleri</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="outputType" class="form-label fw-bolder">Output Type</label>
+                            <select class="form-select" id="outputType">
+                                <option value="0">OFF</option>
+                                <option value="1">4-20mA</option>
+                                <option value="2">0-10V</option>
+                                <option value="3">4-20ma / 0-10v</option>
+
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+
+                            <!--Check box -->
+
+                            <div class="d-flex align-items-center mb-2">
+                                <input class="form-check-input me-1 mt-0" type="checkbox" value=""
+                                    id="outputTypeReversCheck"><span>Çıkışlar tesrsine çevrilsin mi?</span>
+                            </div>
+                            <select class="form-select mt" id="outputTypeRevers" disabled>
+                                <option value="0">OFF</option>
+                                <option value="1">4-20mA Reversed</option>
+                                <option value="2">0-10V Reversed</option>
+                                <option value="3">4-20mA / 0-10V Reversed</option>
+
+                            </select>
+
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                    xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffc107"
+                                    class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                    <circle cx="8" cy="8" r="8" />
+                                </svg><span data-lang="">Çıkışların değerleri standart olarak minimum mesafeden maximum
+                                    mesafeye göre hesaplanmıştır. Eğer bunun tersine ihtiyacınız varsa onay kutusunu
+                                    işaretleyip size uygun seçeneği seçiniz. </span></span>
+                        </div>
+                        <hr>
+                        <div class="col-md-6">
+                            <label for="transistorOutput" class="form-label fw-bolder">Transistor Output</label>
+                            <select class="form-select" id="transistorOutput">
+                                <option value="0">Off</option>
+                                <option value="1">On</option>
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WiFi Ayarları -->
+            <div class="card mb-4">
+                <div class="card-header card-head-text text-center">
+                    <div>WiFi Ayarları</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="wifiUsername" class="form-label fw-bolder">WiFi Username</label>
+                            <input type="text" class="form-control" id="wifiUsername" placeholder="Enter WiFi username">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="wifiPassword" class="form-label fw-bolder">WiFi Password</label>
+                            <input type="password" class="form-control" id="wifiPassword"
+                                placeholder="Enter WiFi password">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Baudrate Ayarları -->
+            <div class="card mb-4">
+                <div class="card-header card-head-text text-center">
+                    <div>Modbus Ayarları</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="baudRate" class="form-label fw-bolder">Baud Rate</label>
+                            <select class="form-select" id="baudRate">
+                                <option value="9600">9600</option>
+                                <option value="19200">19200</option>
+                                <option value="38400">38400</option>
+                                <option value="57600">57600</option>
+                                <option value="115200">115200</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="comtype" class="form-label fw-bolder">Type</label>
+                            <select class="form-select" id="comtype">
+                                <option value="8e1">8, even, 1</option>
+                                <option value="8n1">8, none, 1</option>
+
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mb-5">
+                <button type="submit" class="btn btn-success w-100">Submit</button>
+            </div>
+        </form>
+    </div>
+
+
+    </div>
+
+    <!-- <div class="container">
+        <div class="progress mt-4" style="height: 30px;">
+            <div class="progress-bar" id="black-segment" role="progressbar"></div>
+            <div class="progress-bar bg-success" id="green-segment" role="progressbar"></div>
+            <div class="progress-bar bg-warning progress-bar-striped" id="offset-segment" role="progressbar"></div>
+          </div>
+    </div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="./js/bootstrap.bundle.min.js"></script>
+
+    <script type="module" src="./js/main.js"></script>
+</body>
+
+</html>
