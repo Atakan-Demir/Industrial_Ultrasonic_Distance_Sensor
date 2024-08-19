@@ -83,29 +83,30 @@
         <form id="paraForm">
             <!-- Parametre Ayarları -->
             <h6 id="trans" style="position: absolute;">%TRANSISTORVALUE%</h6>
+            <h6 id="rly" style="position: absolute;">%RELAYVALUE%</h6>
             <div class="card mb-4">
                 <div class="card-header card-head-text text-center">
-                    <div>Parametre Ayarları</div>
+                    <div data-lang="param_label"></div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="inputMinDis" class="form-label fw-bolder">Minimum Distance (mm)</label>
+                            <label for="inputMinDis" class="form-label fw-bolder" data-lang="min_dis_label"></label>
                             <input type="number" class="form-control" id="inputMinDis" value="%MINDISVALUE%" min="30"
                                 max="3990" required placeholder="Enter minimum distance">
                         </div>
                         <div class="col-md-6">
-                            <label for="inputMaxDis" class="form-label fw-bolder">Maximum Distance (mm)</label>
+                            <label for="inputMaxDis" class="form-label fw-bolder" data-lang="max_dis_label"></label>
                             <input type="number" class="form-control" id="inputMaxDis" value="%MAXDISVALUE%" min="40"
                                 max="4000" required placeholder="Enter maximum distance">
                         </div>
                         <div class="col-md-6">
-                            <label for="inputOffset" class="form-label fw-bolder">Offset (mm)</label>
+                            <label for="inputOffset" class="form-label fw-bolder" data-lang="offset_val_label"></label>
                             <input type="number" class="form-control" id="inputOffset" value="%OFFSETVALUE%" min="-500"
                                 max="500" required placeholder="Enter offset">
                         </div>
                         <div class="col-md-6">
-                            <label for="inputInterval" class="form-label fw-bolder">Interval (ms)</label>
+                            <label for="inputInterval" class="form-label fw-bolder" data-lang="output_int_label"></label>
                             <input type="number" class="form-control" id="inputInterval" value="%INTERVALVALUE%" min="0"
                                 max="3600000" required placeholder="Enter interval">
                         </div>
@@ -119,14 +120,14 @@
 
             <div class="card mb-4">
                 <div class="card-header card-head-text text-center">
-                    <div>Çıkış Seçenekleri</div>
+                    <div data-lang="output_label"></div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="outputType" class="form-label fw-bolder">Output Type</label>
+                            <label for="outputType" class="form-label fw-bolder" data-lang="output_type_label"></label>
                             <select class="form-select" id="outputType">
-                                <option value="0">OFF</option>
+                                <option value="0" data-lang="val0_label" class="text-uppercase"></option>
                                 <option value="1">4-20mA</option>
                                 <option value="2">0-10V</option>
                                 <option value="3">4-20ma / 0-10v</option>
@@ -139,10 +140,10 @@
 
                             <div class="d-flex align-items-center mb-2">
                                 <input class="form-check-input me-1 mt-0" type="checkbox" value=""
-                                    id="outputTypeReversCheck"><span>Çıkışlar tesrsine çevrilsin mi?</span>
+                                    id="outputTypeReversCheck"><span data-lang="output_reverse_label"></span>
                             </div>
                             <select class="form-select mt" id="outputTypeRevers" disabled>
-                                <option value="0">OFF</option>
+                                <option value="0" data-lang="val0_label" class="text-uppercase"></option>
                                 <option value="1">4-20mA Reversed</option>
                                 <option value="2">0-10V Reversed</option>
                                 <option value="3">4-20mA / 0-10V Reversed</option>
@@ -155,19 +156,207 @@
                                     xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffc107"
                                     class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
                                     <circle cx="8" cy="8" r="8" />
-                                </svg><span data-lang="">Çıkışların değerleri standart olarak minimum mesafeden maximum
-                                    mesafeye göre hesaplanmıştır. Eğer bunun tersine ihtiyacınız varsa onay kutusunu
-                                    işaretleyip size uygun seçeneği seçiniz. </span></span>
+                                </svg><span data-lang="output_warning"></span></span>
                         </div>
-                        <hr>
-                        <div class="col-md-6">
-                            <label for="transistorOutput" class="form-label fw-bolder">Transistor Output</label>
-                            <select class="form-select" id="transistorOutput">
-                                <option value="0">Off</option>
-                                <option value="1">On</option>
 
+                        <hr>
+
+                        <!-- Transistor Output -->
+                        <div class="col-md-6">
+                            <label for="transistorOutput" class="form-label fw-bolder" data-lang="transistor_output_label"></label>
+                            <select class="form-select" id="transistorOutput">
+                                <option value="0" data-lang="val0_label"></option>
+                                <option value="1" data-lang="val1_label"></option>
+                                <option value="2" data-lang="val2_label"></option>
+                                <option value="3" data-lang="val3_label"></option>
+                                <option value="4" data-lang="val4_label"></option>
+                                <option value="5" data-lang="val5_label"></option>
+                                <option value="6" data-lang="val6_label"></option>
+                                <option value="7" data-lang="val7_label"></option>
+                                <option value="8" data-lang="val8_label"></option>
+                                <option value="9" data-lang="val9_label"></option>
                             </select>
                         </div>
+
+                        <div class="col-md-3">
+                            <label for="transistorInputX" class="form-label fw-bolder" data-lang="x_value_label"></label>
+                            <input type="number" class="form-control" id="transistorInputX" value="%TXVALUE%" min="40"
+                                max="3980" placeholder="Enter X value">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="transistorInputY" class="form-label fw-bolder" data-lang="y_value_label"></label>
+                            <input type="number" class="form-control" id="transistorInputY" value="%TYVALUE%" min="50"
+                                max="3990" placeholder="Enter Y value">
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="mt-3 mb-3" style="position: relative;">
+                                <div class="progress">
+                                    <div class="bar-trans-mark start">
+                                        <div class="mark-line-c"></div>
+                                        <div class="trans-mark-label">0</div>
+                                    </div>
+
+                                    <div class="progress-bar bar1" role="progressbar"></div>
+
+                                    <div class="bar-trans-mark min" id="bar-mark-min-t">
+                                        <div class="mark-line-c"></div>
+                                        <div class="trans-mark-label rev">%MINDISVALUE%</div>
+                                    </div>
+
+                                    <div class="progress-bar bar2" role="progressbar"></div>
+                                    <div class="bar-trans-mark trnx" id="bar-mark-trnx-t">
+                                        <div class="mark-line-c"></div>
+                                        <div class="trans-mark-label">%TXVALUE%</div>
+                                    </div>
+                                    <div class="progress-bar bar3" role="progressbar"></div>
+                                    <div class="progress-bar bar4" role="progressbar"></div>
+
+                                    <div class="bar-trans-mark trny" id="bar-mark-trny-t">
+                                        <div class="mark-line-c"></div>
+                                        <div class="trans-mark-label">%TYVALUE%</div>
+                                    </div>
+                                    <div class="progress-bar bar5" role="progressbar"></div>
+
+                                    <div class="bar-trans-mark max" id="bar-mark-max-t">
+                                        <div class="mark-line-c"></div>
+                                        <div class="trans-mark-label rev">%MAXDISVALUE%</div>
+                                    </div>
+
+                                    <div class="progress-bar bar6" role="progressbar"></div>
+
+                                    <div class="bar-trans-mark end" >
+                                        <div class="mark-line-c"></div>
+                                        <div class="trans-mark-label">4000</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="black"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="black_segment_info"></span></span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#27a746"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="transistor_output_on"></span></span>
+                            </div>
+                            
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#e74a3b"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="transistor_output_off"></span></span>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <!-- Relay Output -->
+
+                        <div class="col-md-6">
+                            <label for="relayOutput" class="form-label fw-bolder" data-lang="relay_output_label"></label>
+                            <select class="form-select" id="relayOutput">
+                                <option value="0" data-lang="val0_label"></option>
+                                <option value="1" data-lang="val1_label"></option>
+                                <option value="2" data-lang="val2_label"></option>
+                                <option value="3" data-lang="val3_label"></option>
+                                <option value="4" data-lang="val4_label"></option>
+                                <option value="5" data-lang="val5_label"></option>
+                                <option value="6" data-lang="val6_label"></option>
+                                <option value="7" data-lang="val7_label"></option>
+                                <option value="8" data-lang="val8_label"></option>
+                                <option value="9" data-lang="val9_label"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="relayInputX" class="form-label fw-bolder" data-lang="x_value_label"></label>
+                            <input type="number" class="form-control" id="relayInputX" value="%RXVALUE%" min="40"
+                                max="3980" placeholder="Enter X value">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="relayInputY" class="form-label fw-bolder" data-lang="y_value_label"></label>
+                            <input type="number" class="form-control" id="relayInputY" value="%RYVALUE%" min="50"
+                                max="3990" placeholder="Enter Y value">
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="mt-3 mb-3" style="position: relative;">
+                                <div class="progress">
+                                    <div class="bar-relay-mark start">
+                                        <div class="mark-line-c"></div>
+                                        <div class="relay-mark-label">0</div>
+                                    </div>
+
+                                    <div class="progress-bar rbar1" role="progressbar"></div>
+
+                                    <div class="bar-relay-mark min" id="bar-mark-min-r">
+                                        <div class="mark-line-c"></div>
+                                        <div class="relay-mark-label rev">%MINDISVALUE%</div>
+                                    </div>
+
+                                    <div class="progress-bar rbar2" role="progressbar"></div>
+                                    <div class="bar-relay-mark rlyx" id="bar-mark-rlyx-r">
+                                        <div class="mark-line-c"></div>
+                                        <div class="relay-mark-label">%RXVALUE%</div>
+                                    </div>
+                                    <div class="progress-bar rbar3" role="progressbar"></div>
+                                    <div class="progress-bar rbar4" role="progressbar"></div>
+
+                                    <div class="bar-relay-mark rlyy" id="bar-mark-rlyy-r">
+                                        <div class="mark-line-c"></div>
+                                        <div class="relay-mark-label">%RYVALUE%</div>
+                                    </div>
+                                    <div class="progress-bar rbar5" role="progressbar"></div>
+
+                                    <div class="bar-relay-mark max" id="bar-mark-max-r">
+                                        <div class="mark-line-c"></div>
+                                        <div class="relay-mark-label rev">%MAXDISVALUE%</div>
+                                    </div>
+
+                                    <div class="progress-bar rbar6" role="progressbar"></div>
+
+                                    <div class="bar-relay-mark end" >
+                                        <div class="mark-line-c"></div>
+                                        <div class="relay-mark-label">4000</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="black"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="black_segment_info"></span></span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#27a746"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="relay_output_on"></span></span>
+                            </div>
+                            
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#e74a3b"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="relay_output_off"></span></span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -175,19 +364,26 @@
             <!-- WiFi Ayarları -->
             <div class="card mb-4">
                 <div class="card-header card-head-text text-center">
-                    <div>WiFi Ayarları</div>
+                    <div data-lang="wifi_config_label"></div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="wifiUsername" class="form-label fw-bolder">WiFi Username</label>
-                            <input type="text" class="form-control" id="wifiUsername" placeholder="Enter WiFi username">
+                            <label for="wifiUsername" class="form-label fw-bolder" data-lang="wifi_ssid_label"></label>
+                            <input type="text" class="form-control" id="wifiUsername" placeholder="Enter WiFi username" required>
                         </div>
                         <div class="col-md-6">
-                            <label for="wifiPassword" class="form-label fw-bolder">WiFi Password</label>
+                            <label for="wifiPassword" class="form-label fw-bolder" data-lang="wifi_password_label"></label>
                             <input type="password" class="form-control" id="wifiPassword"
                                 placeholder="Enter WiFi password">
                         </div>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffc107"
+                                class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                <circle cx="8" cy="8" r="8" />
+                            </svg><span data-lang="">Kullanıcı adı şifre belirleyin.</span></span>
                     </div>
                 </div>
             </div>
@@ -195,12 +391,12 @@
             <!-- Baudrate Ayarları -->
             <div class="card mb-4">
                 <div class="card-header card-head-text text-center">
-                    <div>Modbus Ayarları</div>
+                    <div data-lang="modbus_config_label"></div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="baudRate" class="form-label fw-bolder">Baud Rate</label>
+                            <label for="baudRate" class="form-label fw-bolder" data-lang="modbus_baud_label"></label>
                             <select class="form-select" id="baudRate">
                                 <option value="9600">9600</option>
                                 <option value="19200">19200</option>
@@ -210,7 +406,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="comtype" class="form-label fw-bolder">Type</label>
+                            <label for="comtype" class="form-label fw-bolder" data-lang="modbus_type_label"></label>
                             <select class="form-select" id="comtype">
                                 <option value="8e1">8, even, 1</option>
                                 <option value="8n1">8, none, 1</option>
@@ -222,7 +418,7 @@
             </div>
 
             <div class="text-center mb-5">
-                <button type="submit" class="btn btn-success w-100">Submit</button>
+                <button type="submit" class="btn btn-success w-100" data-lang="submit_button"></button>
             </div>
         </form>
     </div>

@@ -13,6 +13,8 @@ export function updateSegments(currentValues) {
     var greenSegmentStart = currentValues.minDis / totalUnits * 100;
     var greenSegmentWidth = (currentValues.maxDis - currentValues.minDis) / totalUnits * 100;
 
+    // offset'i kaldır
+    currentValues.offset=0;
     if (currentValues.offset > 0) {
         var offsetStart = (currentValues.maxDis / totalUnits * 100);
         var offsetWidth = currentValues.percent * 100;

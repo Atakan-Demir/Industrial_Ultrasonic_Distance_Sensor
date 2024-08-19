@@ -15,19 +15,6 @@ export function updateDistanceIndicator(distance, minDis, maxDis) {
         indicator.style.left = 'calc(' + percentage + '% - 15px)'; // 15px to center the object image
     }
 
-    // Simulate distance changes
-    /*
-    setInterval(() => {
-      
-        dist +=10; 
-         
-       if(dist>3999){
-         dist-=4000;
-       }
-        updateGauge(dist);
-     
-        
-    }, 10);
-    */
+    
     updateGauge(distance-minDis);
 }

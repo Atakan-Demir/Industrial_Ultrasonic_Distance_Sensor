@@ -49,8 +49,8 @@
                     <img src="/assets/ico/flags/uk.png" style="width: 24px;">&nbsp; En
                 </button>
                 <ul class="dropdown-menu dropdown-menu-lg-end">
-                    <li><button class="dropdown-item" type="button" data-lang="en"><img
-                                src="/assets/ico/flags/uk.png" style="width: 24px;">&nbsp; En</button></li>
+                    <li><button class="dropdown-item" type="button" data-lang="en"><img src="/assets/ico/flags/uk.png"
+                                style="width: 24px;">&nbsp; En</button></li>
                     <li><button class="dropdown-item" type="button" data-lang="de"><img
                                 src="/assets/ico/flags/germany.png" style="width: 24px;">&nbsp; De</button></li>
                     <li><button class="dropdown-item" type="button" data-lang="tr"><img
@@ -72,7 +72,14 @@
 
 
     <div class="container mt-5">
+
         <div class="row g-4">
+            <h6 id="trans" style="position: absolute;">%TRANSISTORVALUE%</h6>
+            <h6 id="rly" style="position: absolute;">%RELAYVALUE%</h6>
+            <h6 id="transX" style="position: absolute;">%TXVALUE%</h6>
+            <h6 id="transY" style="position: absolute;">%TYVALUE%</h6>
+            <h6 id="rlyX" style="position: absolute;">%RXVALUE%</h6>
+            <h6 id="rlyY" style="position: absolute;">%RYVALUE%</h6>
 
             <div class="col-12 col-md-12 col-lg-12">
                 <div class="card border-left shadow h-100">
@@ -145,8 +152,9 @@
                             <div class="progressab" id="green-segment"></div>
                             <div class="progressab" id="offset-segment"></div>
                         </div>
-                        <div>
-                            <h4 class="text-center"><span>Min:</span> %MINDISVALUE%mm - <span>Max:</span> %MAXDISVALUE%mm</h4>
+                        <div class="row">
+                            <h4 class="text-center"><span>Min:</span> %MINDISVALUE%mm - <span>Max:</span>
+                                %MAXDISVALUE%mm</h4>
                             <hr>
                             <div class="mb-1">
                                 <span class="text-muted fw-normal" style="font-style: italic;"><svg
@@ -169,16 +177,163 @@
                                         <circle cx="8" cy="8" r="8" />
                                     </svg><span data-lang="yellow_segment_info"></span></span>
                             </div>
-                            <div class="">
+                            <!-- <div class="mb-1">
                                 <span class="text-muted fw-normal" style="font-style: italic;"><svg
                                         xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#e74a3b"
                                         class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
                                         <circle cx="8" cy="8" r="8" />
                                     </svg><span data-lang="red_segment_info"></span></span>
-                            </div>
-                            
+                            </div> -->
+
+                            <hr>
 
                         </div>
+
+
+                        <div class="row mb-2">
+                            <div class="col-12 col-md-12 col-lg-6">
+                                <div class="row">
+                                    <div class="card-head-text text-center fs-6 mt-2"
+                                        data-lang="transistor_output_header">
+
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mt-3 mb-3" style="position: relative;">
+                                            <div class="progress">
+                                                <div class="bar-trans-mark start">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="trans-mark-label">0</div>
+                                                </div>
+
+                                                <div class="progress-bar bar1" role="progressbar"></div>
+
+                                                <div class="bar-trans-mark min" id="bar-mark-min-t">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="trans-mark-label rev">%MINDISVALUE%</div>
+                                                </div>
+
+                                                <div class="progress-bar bar2" role="progressbar"></div>
+                                                <div class="bar-trans-mark trnx" id="bar-mark-trnx-t">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="trans-mark-label">%TXVALUE%</div>
+                                                </div>
+                                                <div class="progress-bar bar3" role="progressbar"></div>
+                                                <div class="progress-bar bar4" role="progressbar"></div>
+
+                                                <div class="bar-trans-mark trny" id="bar-mark-trny-t">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="trans-mark-label">%TYVALUE%</div>
+                                                </div>
+                                                <div class="progress-bar bar5" role="progressbar"></div>
+
+                                                <div class="bar-trans-mark max" id="bar-mark-max-t">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="trans-mark-label rev">%MAXDISVALUE%</div>
+                                                </div>
+
+                                                <div class="progress-bar bar6" role="progressbar"></div>
+
+                                                <div class="bar-trans-mark end">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="trans-mark-label">4000</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-12 col-md-12 col-lg-6">
+                                <div class="row">
+                                    <div class="card-head-text text-center fs-6 mt-2" data-lang="relay_output_header">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mt-3 mb-3" style="position: relative;">
+                                            <div class="progress">
+                                                <div class="bar-relay-mark start">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="relay-mark-label">0</div>
+                                                </div>
+
+                                                <div class="progress-bar rbar1" role="progressbar"></div>
+
+                                                <div class="bar-relay-mark min" id="bar-mark-min-r">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="relay-mark-label rev">%MINDISVALUE%</div>
+                                                </div>
+
+                                                <div class="progress-bar rbar2" role="progressbar"></div>
+                                                <div class="bar-relay-mark rlyx" id="bar-mark-rlyx-r">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="relay-mark-label">%RXVALUE%</div>
+                                                </div>
+                                                <div class="progress-bar rbar3" role="progressbar"></div>
+                                                <div class="progress-bar rbar4" role="progressbar"></div>
+
+                                                <div class="bar-relay-mark rlyy" id="bar-mark-rlyy-r">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="relay-mark-label">%RYVALUE%</div>
+                                                </div>
+                                                <div class="progress-bar rbar5" role="progressbar"></div>
+
+                                                <div class="bar-relay-mark max" id="bar-mark-max-r">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="relay-mark-label rev">%MAXDISVALUE%</div>
+                                                </div>
+
+                                                <div class="progress-bar rbar6" role="progressbar"></div>
+
+                                                <div class="bar-relay-mark end">
+                                                    <div class="mark-line-c"></div>
+                                                    <div class="relay-mark-label">4000</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <hr>
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="black"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="black_segment_info"></span></span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#27a746"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="output_green_info"></span></span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#e74a3b"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="output_red_info"></span></span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                        xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffc107"
+                                        class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                        <circle cx="8" cy="8" r="8" />
+                                    </svg><span data-lang="output_yellow_info"></span></span>
+                            </div>
+
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -227,7 +382,8 @@
                             <div class="col mr-2">
                                 <div class="fw-bolder text-warning text-uppercase mb-1" data-lang="offset_val_label">
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="offsetValue">%OFFSETVALUE%</span></div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span
+                                        id="offsetValue">%OFFSETVALUE%</span></div>
                             </div>
                             <div class="col-auto">
                                 <img src="/assets/ico/offset-66.png" class="text-gray-300">
@@ -243,7 +399,8 @@
                             <div class="col mr-2">
                                 <div class="fw-bolder text-info text-uppercase mb-1" data-lang="output_int_label">
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span id="intervalValue">%INTERVALVALUE%</span></div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800"><span
+                                        id="intervalValue">%INTERVALVALUE%</span></div>
                             </div>
                             <div class="col-auto">
                                 <img src="/assets/ico/output-time-66.png" class="text-gray-300">
@@ -275,7 +432,18 @@
 
 
 
-    <div class="footer"></div>
+    <div class="footer mb-2">
+        <!-- Powered By Infinitium Technology -->
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-12 col-lg-12 text-center flex-column">
+                    
+                    <p class="text-muted"><img src="/assets/ico/logo.png" alt=""> Powered By <a href="https://www.infinitiumtech.com" target="_blank" class="text-muted">Infinitium Technology</a> <img src="/assets/ico/logo.png" alt=""></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
 
 

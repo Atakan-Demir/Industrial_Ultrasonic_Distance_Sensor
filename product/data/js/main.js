@@ -3,6 +3,7 @@
 import { updateSegments } from './bar.js';
 import { updateLanguage } from './language.js';
 import { updateDistanceIndicator } from './distance_indicator.js';
+import { updateTransistorOutputBar,updateRelayOutputBar } from './outputBar.js';
 
 document.addEventListener("DOMContentLoaded", function () {
     const languageButtons = document.querySelectorAll('.dropdown-item');
@@ -51,7 +52,13 @@ document.addEventListener("DOMContentLoaded", function () {
         percent: null,
         outputType: null,
         outputTypeRev: null,
-        transistor: null
+        transistor: null,
+        transistorX: null,
+        transistorY: null,
+        relay: null,
+        relayX: null,
+        relayY: null
+
     };
 
     var minDis;
@@ -63,6 +70,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var outputType;
     var outputTypeRev;
     var transistor;
+    var transistorX;
+    var transistorY;
+    var relay;
+    var relayX;
+    var relayY;
 
     window.addEventListener('load', onLoad);
 
@@ -145,12 +157,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("outputTypeReversCheck").checked = false;
                     document.getElementById("outputTypeRevers").disabled = true;
                     document.getElementById("outputTypeRevers").value = "0";
-                } else{
+                } else {
                     document.getElementById("outputTypeReversCheck").checked = true;
                     document.getElementById("outputTypeRevers").disabled = false;
                     document.getElementById("outputTypeRevers").value = e.data;
                 }
-                
+
             }
 
         }, false);
@@ -164,6 +176,52 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }, false);
 
+        source.addEventListener('TransXVal', function (e) {
+            currentValues.transistorX = e.data;
+            transistorX = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("transistorInputX").value = e.data;
+            }
+
+        }, false);
+
+        source.addEventListener('TransYVal', function (e) {
+            currentValues.transistorY = e.data;
+            transistorY = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("transistorInputY").value = e.data;
+            }
+        }, false);
+
+        source.addEventListener('RelayVal', function (e) {
+            currentValues.relay = e.data;
+            relay = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("relayOutput").value = e.data;
+                console.log("Relay: " + e.data);
+            }
+
+            //updateRelayOutputBar(e.data, currentValues.minDis, currentValues.maxDis);
+        }, false);
+
+        source.addEventListener('RelayXVal', function (e) {
+            currentValues.relayX = e.data;
+            relayX = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("relayInputX").value = e.data;
+                console.log("RelayX: " + e.data);
+            }
+        }
+        , false);
+
+        source.addEventListener('RelayYVal', function (e) {
+            currentValues.relayY = e.data;
+            relayY = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("relayInputY").value = e.data;
+                console.log("RelayY: " + e.data);
+            }
+        }, false);
 
         source.addEventListener('DistanceVal', function (e) {
             if (path === '/' || path === '/index.html') {
@@ -191,7 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         loadInitialValues();
     }
-    function updateFormValues(minDis, maxDis, offset, distance, interval, percent, outputType,outputTypeRev, transistor) {
+    function updateFormValues(minDis, maxDis, offset, distance, interval, percent, outputType, outputTypeRev, transistor, transistorX, transistorY, relay, relayX, relayY) {
         currentValues.minDis = minDis;
         currentValues.maxDis = maxDis;
         currentValues.offset = offset;
@@ -201,6 +259,11 @@ document.addEventListener("DOMContentLoaded", function () {
         currentValues.outputType = outputType;
         currentValues.outputTypeRev = outputTypeRev;
         currentValues.transistor = transistor;
+        currentValues.transistorX = transistorX;
+        currentValues.transistorY = transistorY;
+        currentValues.relay = relay;
+        currentValues.relayX = relayX;
+        currentValues.relayY = relayY;
 
         //if config
 
@@ -213,6 +276,15 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("outputTypeRevers").value = outputTypeRev;
             document.getElementById("transistorOutput").value = transistor;
             document.getElementById("trans").innerText = transistor;
+            //document.getElementById("out").innerText = outputType;
+            //document.getElementById("outRev").innerText = outputTypeRev;
+            document.getElementById("transistorInputX").value = transistorX;
+            document.getElementById("transistorInputY").value = transistorY;
+            document.getElementById("relayOutput").value = relay;
+            document.getElementById("rly").innerText = relay;
+            console.log("RelayXXX: " + relayX);
+            document.getElementById("relayInputX").value = parseInt(relayX);
+            document.getElementById("relayInputY").value = parseInt(relayY);
         }
 
 
@@ -245,10 +317,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     currentValues.distance = doc.getElementById('distanceValue').innerText;
                     currentValues.interval = doc.getElementById('intervalValue').value;
                     currentValues.percent = doc.getElementById('percentValue').innerText;
+                    //currentValues.outputType = doc.getElementById('out').innerText;
+                    //currentValues.outputTypeRev = doc.getElementById('outRev').innerText;
+                    currentValues.transistor = doc.getElementById("trans").innerText;
+                    currentValues.transistorX = parseInt(doc.getElementById("transX").innerText);
+                    currentValues.transistorY = parseInt(doc.getElementById("transY").innerText);
+                    currentValues.relay = doc.getElementById("rly").innerText;
+                    currentValues.relayX = parseInt(doc.getElementById("rlyX").innerText);
+                    currentValues.relayY = parseInt(doc.getElementById("rlyY").innerText);
 
 
 
-                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.transistor);
+                    updateTransistorOutputBar(currentValues.transistor, currentValues.minDis, currentValues.maxDis, currentValues.transistorX, currentValues.transistorY);
+                    updateRelayOutputBar(currentValues.relay, currentValues.minDis, currentValues.maxDis, currentValues.relayX, currentValues.relayY);
+                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.transistor, currentValues.transistorX, currentValues.transistorY,currentValues.relay, currentValues.relayX, currentValues.relayY);
                 }
 
 
@@ -283,7 +365,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     currentValues.outputTypeRev = outputTypeRevValue;
                     var outputTypeRevSelect = document.getElementById("outputTypeRevers");
                     outputTypeRevSelect.value = outputTypeRevValue;
-                    if(outputTypeRevValue!=="0"){
+                    if (outputTypeRevValue !== "0") {
                         document.getElementById("outputTypeReversCheck").checked = true;
                         document.getElementById("outputTypeRevers").disabled = false;
                     }
@@ -294,9 +376,48 @@ document.addEventListener("DOMContentLoaded", function () {
                     transistorSelect.value = transistorValue;
 
 
+                    currentValues.transistorX = doc.getElementById("transistorInputX").value;
+                    currentValues.transistorY = doc.getElementById("transistorInputY").value;
+                    if (transistorValue === "6" || transistorValue === "7") {
+                        document.getElementById("transistorInputX").disabled = false;
 
+                        document.getElementById("transistorInputY").disabled = true;
 
-                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType,currentValues.outputTypeRev, currentValues.transistor);
+                    } else if (transistorValue === "8" || transistorValue === "9") {
+                        document.getElementById("transistorInputX").disabled = false;
+                        document.getElementById("transistorInputY").disabled = false;
+                    } else {
+                        document.getElementById("transistorInputX").disabled = true;
+                        document.getElementById("transistorInputY").disabled = true;
+
+                    }
+
+                    var relayValue = document.getElementById("rly").innerText.trim();
+                    currentValues.relay = relayValue;
+                    var relaySelect = document.getElementById("relayOutput");
+                    relaySelect.value = relayValue;
+
+                    console.log("Relay Value: " + relayValue);
+
+                    currentValues.relayX = doc.getElementById("relayInputX").value;
+                    currentValues.relayY = doc.getElementById("relayInputY").value;
+
+                    console.log("Relay X: " + currentValues.relayX + " Relay Y: " + currentValues.relayY);
+                    if (relayValue === "6" || relayValue === "7") {
+                        document.getElementById("relayInputX").disabled = false;
+                        document.getElementById("relayInputY").disabled = true;
+                    } else if (relayValue === "8" || relayValue === "9") {
+                        document.getElementById("relayInputX").disabled = false;
+                        document.getElementById("relayInputY").disabled = false;
+                    } else {
+                        document.getElementById("relayInputX").disabled = true; 
+                        document.getElementById("relayInputY").disabled = true;
+                    }
+                    
+
+                    updateTransistorOutputBar(transistorValue, currentValues.minDis, currentValues.maxDis, currentValues.transistorX, currentValues.transistorY);
+                    updateRelayOutputBar(relayValue, currentValues.minDis, currentValues.maxDis, currentValues.relayX, currentValues.relayY);
+                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.outputTypeRev, currentValues.transistor, currentValues.transistorX, currentValues.transistorY, currentValues.relay, currentValues.relayX, currentValues.relayY);
                     //updateProgressBar();
                 }
             };
@@ -311,6 +432,43 @@ document.addEventListener("DOMContentLoaded", function () {
         let outputTypeRevers = document.getElementById("outputTypeRevers");
         let outputTypeElmnt = document.getElementById("outputType");
         let outputTypeValue = document.getElementById("out");
+
+        let transistorOutputElmnt = document.getElementById("transistorOutput");
+        let transistorInputX = document.getElementById("transistorInputX");
+        let transistorInputY = document.getElementById("transistorInputY");
+
+        let relayOutputElmnt = document.getElementById("relayOutput");
+        let relayInputX = document.getElementById("relayInputX");
+        let relayInputY = document.getElementById("relayInputY");
+
+        //transistorOutput change event
+        transistorOutputElmnt.addEventListener("change", function () {
+            if (transistorOutputElmnt.value === "6" || transistorOutputElmnt.value === "7") {
+                transistorInputX.disabled = false;
+                transistorInputY.disabled = true;
+
+            } else if (transistorOutputElmnt.value === "8" || transistorOutputElmnt.value === "9") {
+                transistorInputX.disabled = false;
+                transistorInputY.disabled = false;
+            } else {
+                transistorInputX.disabled = true;
+                transistorInputY.disabled = true;
+            }
+        });
+        // relay output change event
+
+        relayOutputElmnt.addEventListener("change", function () {
+            if (relayOutputElmnt.value === "6" || relayOutputElmnt.value === "7") {
+                relayInputX.disabled = false;
+                relayInputY.disabled = true;
+            } else if (relayOutputElmnt.value === "8" || relayOutputElmnt.value === "9") {
+                relayInputX.disabled = false;
+                relayInputY.disabled = false;
+            } else {
+                relayInputX.disabled = true;
+                relayInputY.disabled = true;
+            }
+        });
 
         // outputType change event
         outputTypeElmnt.addEventListener("change", function () {
@@ -342,8 +500,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             outputTypeCheck.disabled = false;
         }
-        
-        
+
+
         paraForm.addEventListener("submit", (e) => {
             e.preventDefault(); // Formun varsayılan submit davranışını engelle
             minDis = document.getElementById("inputMinDis").value;
@@ -351,77 +509,160 @@ document.addEventListener("DOMContentLoaded", function () {
             offset = document.getElementById("inputOffset").value;
             interval = document.getElementById("inputInterval").value;
             outputType = document.getElementById("outputType").value;
-            if(outputTypeCheck.checked){
+            if (outputTypeCheck.checked) {
                 outputTypeRev = document.getElementById("outputTypeRevers").value;
-            }else{
+            } else {
                 outputTypeRev = "0";
             }
-            
+
             transistor = document.getElementById("transistorOutput").value;
+            transistorX = document.getElementById("transistorInputX").value;
+            transistorY = document.getElementById("transistorInputY").value;
+
+
+            relay = document.getElementById("relayOutput").value;
+            relayX = document.getElementById("relayInputX").value;
+            relayY = document.getElementById("relayInputY").value;
 
             console.log("D :" + distance);
             console.log("CD :" + currentValues.distance);
 
 
-            if (minDis === "" || maxDis === "" || offset === "" || interval === "" || outputType === "" || outputTypeRev==="" || transistor === "") {
-                alert("Form empty!!");
-            } else {
-                if (minDis == currentValues.minDis && maxDis == currentValues.maxDis && offset == currentValues.offset && interval == currentValues.interval && outputType == currentValues.outputType&&outputTypeRev==currentValues.outputTypeRev && transistor == currentValues.transistor) {
-                    alert("degerler ayni. Parametre gönderimi yapamazsınız!");
+
+            function validateForm() {
+
+                // Değerlerin boş olup olmadığını kontrol et
+                if (minDis === "" || maxDis === "" || offset === "" || interval === "" || outputType === "" || outputTypeRev === "" || transistor === "" || transistorX === "" || transistorY === "" || relay === "" || relayX === "" || relayY === "") {
+                    alert("Form empty!!");
+                    return false;
+                }
+
+                // Transistör X ve Y değerlerini kontrol et
+                if (transistor === "6" || transistor === "7") {
+                    if (transistorX === "" || isNaN(transistorX)) {
+                        alert("Transistor X değeri boş veya geçersiz!");
+                        return false;
+                    }
+                    else if (parseInt(transistorX) < minDis || parseInt(transistorX) > maxDis) {
+                        alert("Transistor X değeri sınır dışı! Lütfen kontrol ediniz. (" + minDis + "-" + maxDis + ")");
+                        return false;
+                    }
+                } else if (transistor === "8" || transistor === "9") {
+                    if (transistorX === "" || isNaN(transistorX) || transistorY === "" || isNaN(transistorY)) {
+                        alert("Transistor X veya Y değeri boş veya geçersiz!");
+                        return false;
+                    } else if (parseInt(transistorX) === parseInt(transistorY)) {
+                        alert("Transistor X ve Y değeri aynı olamaz!");
+                        return false;
+                    } else if (parseInt(transistorX) > parseInt(transistorY)) {
+                        alert("Transistor X değeri Y değerinden büyük olamaz!");
+                        return false;
+                    } else if (parseInt(transistorX) < minDis || parseInt(transistorX) > maxDis || parseInt(transistorY) < minDis || parseInt(transistorY) > maxDis) {
+                        alert("Transistor X veya Y değeri sınır dışı! Lütfen kontrol ediniz. (" + minDis + "-" + maxDis + ")");
+                        return false;
+                    }
+                }
+
+                // Röle X ve Y değerlerini kontrol et
+                if (relay === "6" || relay === "7") {
+                    if (relayX === "" || isNaN(relayX)) {
+                        alert("Relay X değeri boş veya geçersiz!");
+                        return false;
+                    }
+                    else if (parseInt(relayX) < minDis || parseInt(relayX) > maxDis) {
+                        alert("Relay X değeri sınır dışı! Lütfen kontrol ediniz. (" + minDis + "-" + maxDis + ")");
+                        return false;
+                    }
+                } else if (relay === "8" || relay === "9") {
+                    if (relayX === "" || isNaN(relayX) || relayY === "" || isNaN(relayY)) {
+                        alert("Relay X veya Y değeri boş veya geçersiz!");
+                        return false;
+                    } else if (parseInt(relayX) === parseInt(relayY)) {
+                        alert("Relay X ve Y değeri aynı olamaz!");
+                        return false;
+                    } else if (parseInt(relayX) > parseInt(relayY)) {
+                        alert("Relay X değeri Y değerinden büyük olamaz!");
+                        return false;
+                    } else if (parseInt(relayX) < minDis || parseInt(relayX) > maxDis || parseInt(relayY) < minDis || parseInt(relayY) > maxDis) {
+                        alert("Relay X veya Y değeri sınır dışı! Lütfen kontrol ediniz. (" + minDis + "-" + maxDis + ")");
+                        return false;
+                    }
+                }
+
+                // Diğer kontroller
+                if (minDis == currentValues.minDis && maxDis == currentValues.maxDis && offset == currentValues.offset && interval == currentValues.interval && outputType == currentValues.outputType && outputTypeRev == currentValues.outputTypeRev && transistor == currentValues.transistor && transistorX == currentValues.transistorX && transistorY == currentValues.transistorY && relay == currentValues.relay && relayX == currentValues.relayX && relayY == currentValues.relayY) {
+                    alert("Değerler aynı. Parametre gönderimi yapamazsınız!");
+                    return false;
                 } else if (offset / currentValues.distance > 0.05) {
                     alert("Ofset %5'ten fazla olamaz!");
-
+                    return false;
                 } else if (offset / currentValues.distance * maxDis + maxDis > 4000 || offset / currentValues.distance * minDis + minDis < 30) {
                     console.log("Condition Block1: " + offset / currentValues.distance * maxDis + maxDis);
                     console.log("Condition Block2: " + offset / currentValues.distance * minDis + minDis);
                     alert("Ofset değeri sınır dışı! Lütfen kontrol ediniz. (30-4000)");
+                    return false;
+                }
 
-                }
-                else {
-                    console.log("Percent calculated: " + offset / currentValues.distance);
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset + "&interval=" + interval + "&outputType=" + outputType +"&outputTypeRev="+outputTypeRev +"&transistor=" + transistor, true);
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState == 4 && xhr.status == 200) {
-                            console.log('200 OK! Gönderim tamam.');
-                            updateFormValues(minDis, maxDis, offset, currentValues.distance, interval, percent, outputType, outputTypeRev, transistor);
-                        }
-                    };
-                    xhr.send();
-                }
+                return true;
             }
+
+            function submitForm() {
+                if (!validateForm()) {
+                    return; // Form geçerli değilse işlem yapma
+                }
+
+                // Form geçerliyse verileri gönder
+                console.log("Percent calculated: " + offset / currentValues.distance);
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset + "&interval=" + interval + "&outputType=" + outputType + "&outputTypeRev=" + outputTypeRev + "&transistor=" + transistor + "&transXVal=" + transistorX + "&transYVal=" + transistorY+"&relay="+relay+"&relayXVal="+relayX+"&relayYVal="+relayY, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        console.log('200 OK! Gönderim tamam.');
+                        updateFormValues(minDis, maxDis, offset, currentValues.distance, interval, percent, outputType, outputTypeRev, transistor, transistorX, transistorY, relay, relayX, relayY);
+                        updateTransistorOutputBar(transistor, minDis, maxDis, transistorX, transistorY);
+                        updateRelayOutputBar(relay, minDis, maxDis, relayX, relayY);
+                        loadInitialValues();
+
+                    }
+                };
+                xhr.send();
+
+                
+            }
+
+
+            submitForm();
         });
 
         function updateOutputTypeRevers() {
 
             var selectedValue = outputTypeElmnt.value;
             // Tüm seçenekleri devre dışı bırak
-            Array.from(outputTypeRevers.options).forEach(function(option) {
+            Array.from(outputTypeRevers.options).forEach(function (option) {
                 if (selectedValue === "3") {
-                    if(option.value === "0"){
+                    if (option.value === "0") {
                         option.disabled = true;
 
-                    }else{
+                    } else {
                         option.disabled = false;
                     }
 
-                }else{
+                } else {
                     option.disabled = true;
                 }
-                
+
             });
-    
+
             // Seçili değeri etkinleştir
-            
+
             var matchingOption = outputTypeRevers.querySelector(`option[value="${selectedValue}"]`);
             if (matchingOption) {
                 matchingOption.disabled = false;
                 outputTypeRevers.value = selectedValue;
             }
         }
-    
-        
-    
+
+       
         // Başlangıç durumunu ayarla
         updateOutputTypeRevers();
     }
