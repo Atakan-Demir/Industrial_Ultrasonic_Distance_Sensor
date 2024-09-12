@@ -6,13 +6,18 @@
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <Preferences.h>
+#include <ModbusRtu.h>
+
+#define DATA_SIZE 7
 
 //modbus
-/*
-  Modbus slave(1, Serial);
-
-  uint16_t au16data[7];
-*/
+Modbus slave;
+uint16_t au16data[DATA_SIZE];
+uint16_t au16dataCheck[DATA_SIZE];
+SerialConfig serialConfig; //comtype
+int baudRTU;
+int slaveID;
+int selectDS;
 
 Preferences preferences;
 
@@ -31,6 +36,10 @@ const char* relayKey = "relayValue";
 const char* relayXKey = "relayXValue";
 const char* relayYKey = "relayYValue";
 const char* intervalKey = "intervalValue";
+const char* selectKey ="selectValue";
+const char* baudKey = "baudValue";
+const char* comKey = "comValue";
+const char* slaveKey= "slaveValue";
 
 // Seri iletişim ayarları
 #define RXD2 16
@@ -51,6 +60,11 @@ const char* PARAM_OUTPUT4 =  "transYVal";
 const char* PARAM_OUTPUT5 = "relay";
 const char* PARAM_OUTPUT6 = "relayXVal";
 const char* PARAM_OUTPUT7 = "relayYVal";
+const char* PARAM_SELECT = "selectVal";
+const char* PARAM_RTU = "baudVal";
+const char* PARAM_RTU1 = "comVal";
+const char* PARAM_RTU2 = "slaveVal";
+
 String mindisValue = "30";
 String maxdisValue = "4000";
 String offsetValue = "0";
@@ -60,9 +74,13 @@ String outputRevValue = "0";
 String transistorValue = "0";
 String transXValue = "40";
 String transYValue = "50";
-String relayValue ="0";
-String relayXValue ="40";
-String relayYValue ="50";
+String relayValue = "0";
+String relayXValue = "40";
+String relayYValue = "50";
+String selectValue = "0";
+String baudValue = "3";
+String comValue = "0";
+String slaveValue= "1";
 unsigned long interval = 0;
 
 unsigned long previousMillis = 0;
@@ -70,8 +88,8 @@ unsigned long previousMillis1 = 0;
 
 //distance
 unsigned char data[4] = {};
-float distance;
-float distanceCalc;
+float distance = 0.0;
+float distanceCalc = 0.0;
 
 // OLED ekran ayarları
 const int SCREEN_WIDTH = 128;
@@ -116,14 +134,26 @@ String processor(const String& var) {
   else if (var == "TYVALUE") {
     return transYValue;
   }
-  else if(var == "RELAYVALUE"){
+  else if (var == "RELAYVALUE") {
     return relayValue;
   }
-  else if(var == "RXVALUE"){
+  else if (var == "RXVALUE") {
     return relayXValue;
   }
-  else if(var=="RYVALUE"){
+  else if (var == "RYVALUE") {
     return relayYValue;
+  }
+  else if (var=="SELECTVAL"){
+    return selectValue;
+  }
+  else if(var=="BAUDVAL"){
+    return baudValue;
+  }
+  else if(var=="COMVAL"){
+    return comValue;
+  }
+  else if(var=="SLAVEVAL"){
+    return slaveValue;
   }
   return String();
 }
@@ -147,6 +177,7 @@ int relayY;
 
 
 
+String consoleStr;
 
 
 
@@ -174,6 +205,10 @@ void setup() {
     preferences.putString(relayKey, relayValue);
     preferences.putString(relayXKey, relayXValue);
     preferences.putString(relayYKey, relayYValue);
+    preferences.putString(selectKey,selectValue);
+    preferences.putString(baudKey,baudValue);
+    preferences.putString(comKey,comValue);
+    preferences.putString(slaveKey,slaveValue);
     preferences.putULong(intervalKey, interval);
 
     preferences.putBool(firstRunKey, true);
@@ -194,40 +229,48 @@ void setup() {
     transistorValue = preferences.getString(transistorKey, "0");
     transXValue = preferences.getString(transXKey, "40");
     transYValue = preferences.getString(transYKey, "50");
-    relayValue = preferences.getString(relayKey,"0");
-    relayXValue = preferences.getString(relayXKey,"40");
-    relayYValue = preferences.getString(relayYKey,"50");
+    relayValue = preferences.getString(relayKey, "0");
+    relayXValue = preferences.getString(relayXKey, "40");
+    relayYValue = preferences.getString(relayYKey, "50");
+    selectValue = preferences.getString(selectKey,"0");
+    baudValue = preferences.getString(baudKey,"3");
+    comValue = preferences.getString(comKey,"0");
+    slaveValue = preferences.getString(slaveKey,"1");
     interval = preferences.getULong(intervalKey, 0);
   }
 
   preferences.end();
 
-  setParam(mindisValue, maxdisValue, offsetValue, interval, percentValue, outputTypeValue, outputRevValue, transistorValue, transXValue, transYValue,relayValue,relayXValue,relayYValue);
+  setParam(mindisValue, maxdisValue, offsetValue, interval, percentValue, outputTypeValue, outputRevValue, transistorValue, transXValue, transYValue, relayValue, 
+            relayXValue, relayYValue,selectValue,baudValue,comValue, slaveValue);
 
   // OLED ekran başlatma
   display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS);
   display.clearDisplay();
 
   //modbus
-  //Serial.begin(19200, SERIAL_8E1);
+  slave = Modbus(slaveID, Serial);
 
   // Seri portları başlatma
-  Serial.begin(115200);
+  Serial.begin(baudRTU,serialConfig);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  slave.start();
   //Serial.println("1. interval: " + interval);
 
   if (!SPIFFS.begin(true)) {
-    Serial.println("An Error has occurred while mounting SPIFFS");
+    //Serial.println("An Error has occurred while mounting SPIFFS");
+    consoleStr = "An Error has occurred while mounting SPIFFS";
+    events.send(String(consoleStr).c_str(), "message", millis());
     return;
   }
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-    Serial.println("Connecting to WiFi..");
+    //Serial.println("Connecting to WiFi..");
   }
 
-  Serial.println(WiFi.localIP());
+  //Serial.println(WiFi.localIP());
 
 
   // HTML
@@ -363,6 +406,10 @@ void setup() {
       String p11 = request->getParam(PARAM_OUTPUT5)->value(); //relay
       String p12 = request->getParam(PARAM_OUTPUT6)->value(); //relayXVal
       String p13 = request->getParam(PARAM_OUTPUT7)->value(); //relayYVal
+      String p14 = request->getParam(PARAM_SELECT)->value(); //selectVal
+      String p15 = request->getParam(PARAM_RTU)->value(); //baudVal
+      String p16 = request->getParam(PARAM_RTU1)->value(); //comVal
+      String p17 = request->getParam(PARAM_RTU2)->value(); //slaveVal
       events.send(String(p1).c_str(), "MinDis", millis());
       events.send(String(p2).c_str(), "MaxDis", millis());
       events.send(String(p3).c_str(), "OffsetVal", millis());
@@ -376,16 +423,29 @@ void setup() {
       events.send(String(p11).c_str(), "RelayVal", millis());
       events.send(String(p12).c_str(), "RelayXVal", millis());
       events.send(String(p13).c_str(), "RelayYVal", millis());
-      writeEeprom(p1, p2, p3, p4_ULong, p6, p7, p8, p9, p10,p11,p12,p13);
-      setParam(p1, p2, p3, p4_ULong, percentValue, p6, p7, p8, p9, p10,p11,p12,p13);
+      events.send(String(p14).c_str(), "SelectVal", millis());
+      events.send(String(p15).c_str(), "BaudVal", millis());
+      events.send(String(p16).c_str(), "ComVal", millis());
+      events.send(String(p17).c_str(), "SlaveVal", millis());
+      writeEeprom(p1, p2, p3, p4_ULong, p6, p7, p8, p9, p10, p11, p12, p13,p14,p15,p16,p17);
+      setParam(p1, p2, p3, p4_ULong, percentValue, p6, p7, p8, p9, p10, p11, p12, p13,p14,p15,p16,p17);
     } else {
       inputMessage = "No message sent";
     }
-    Serial.println("MinDis: " + mindisValue + "/MaxDis: " + maxdisValue
+    /*
+      Serial.println("MinDis: " + mindisValue + "/MaxDis: " + maxdisValue
                    + "/Offset: " + offsetValue + "/Interval: " + interval
                    + "/outputType: " + outputType + "/outputTypeRev: " + outputTypeRevers
                    + "/transistor: " + transistor + "/transX: " + transX + "/transY: " + transY
                    + "/relay: " + relay + "/relayX: "+ relayX + "/relayY: "+ relayY);
+    */
+    inputMessage = "MinDis: " + mindisValue + "/MaxDis: " + maxdisValue
+                   + "/Offset: " + offsetValue + "/Interval: " + interval
+                   + "/outputType: " + outputType + "/outputTypeRev: " + outputTypeRevers
+                   + "/transistor: " + transistor + "/transX: " + transX + "/transY: " + transY
+                   + "/relay: " + relay + "/relayX: " + relayX + "/relayY: " + relayY +"/selectDS: "+ selectDS
+                   + "/baudRTU: "+ baudRTU+"/com: "+serialConfig+"/slaveID: "+ slaveID;
+    events.send(String(inputMessage).c_str(), "message", millis());
     request->send(200, "text/plain", "OK");
 
   });
@@ -393,7 +453,7 @@ void setup() {
   // Handle Web Server Events
   events.onConnect([](AsyncEventSourceClient * client) {
     if (client->lastId()) {
-      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+      //Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
     }
     client->send("hello!", NULL, millis(), 1000);
   });
@@ -403,16 +463,21 @@ void setup() {
   server.addHandler(&events);
   server.begin();
 
+  /*
+    Serial.println("/outputTypeValue: " + outputTypeValue + "/outputRevValue: " + outputRevValue
+                   + "/transistorValue: " + transistorValue +"/relayValue: " + relayValue);
+    Serial.println("/outputType: " + outputType + "/outputTypeRev: " + outputTypeRevers
+                   + "/transistor: " + transistor + "/transXVal" + transXValue + "/transYVal: " + transYValue
+                   + "/relay: " + relayValue + "/relayXVal: "+ relayXValue + "/relayYVal: "+ relayYValue);
+  */
 
-  Serial.println("/outputTypeValue: " + outputTypeValue + "/outputRevValue: " + outputRevValue
-                 + "/transistorValue: " + transistorValue +"/relayValue: " + relayValue);
-  Serial.println("/outputType: " + outputType + "/outputTypeRev: " + outputTypeRevers
-                 + "/transistor: " + transistor + "/transXVal" + transXValue + "/transYVal: " + transYValue
-                 + "/relay: " + relayValue + "/relayXVal: "+ relayXValue + "/relayYVal: "+ relayYValue);
+  //au16dataCheck[2] = (int)minDis;
 
 }
 void loop() {
   // MODBUS OP
+  slave.poll(au16data, DATA_SIZE);
+  //io_poll();
   //Serial.println("OTRV: "+ outputRevValue);
   // Ultrasonik sensör verilerini okuma
   unsigned long currentMillis = millis();
@@ -459,55 +524,70 @@ void loop() {
           }
 
           // Transistor Value
-          switch (transistorValue.toInt()) { 
+          switch (transistorValue.toInt()) {
             case 0:
               // OFF
               break;
             case 1:
               if (minDis < distanceCalc) {
-                Serial.println("TransistörValue 1 : ");
+                consoleStr = "TransistörValue 1 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 2:
               if (minDis > distanceCalc) {
-                Serial.println("TransistörValue 2 : ");
+                consoleStr = "TransistörValue 2 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 3:
               if (maxDis < distanceCalc) {
-                Serial.println("TransistörValue 3 : ");
+                consoleStr = "TransistörValue 3 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 4:
               if (maxDis > distanceCalc) {
-                Serial.println("TransistörValue 4 : ");
+                consoleStr = "TransistörValue 4 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 5:
               if (minDis < distanceCalc && distanceCalc < maxDis) {
-                Serial.println("TransistörValue 5 : ");
+                consoleStr = "TransistörValue 5 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 6:
               if (transX < distanceCalc) {
-                Serial.printf("TransistörValue 6 X:%d\n", transX);
+                //Serial.printf("TransistörValue 6 X:%d\n", transX);
+                consoleStr = "TransistörValue 6 : " + transX;
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 7:
               if (transX > distanceCalc) {
-                Serial.printf("TransistörValue 7 X:%d\n", transX);
+                //Serial.printf("TransistörValue 7 X:%d\n", transX);
+                consoleStr = "TransistörValue 7 : " + transX;
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 8:
               if (transX < distanceCalc && distanceCalc < transY) {
-                Serial.printf("TransistörValue 8 X:%d Y:%d\n", transX, transY);
+                //Serial.printf("TransistörValue 8 X:%d Y:%d\n", transX, transY);
+                consoleStr = "TransistörValue 8 : " + String(transX) + " / " + String(transY);
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 9:
               if (minDis < distanceCalc && distanceCalc < transX) {
-                Serial.printf("TransistörValue 9.1 X:%d Y:%d\n", transX, transY);
+                //Serial.printf("TransistörValue 9.1 X:%d Y:%d\n", transX, transY);
+                consoleStr = "TransistörValue 9.1 : " + String(transX) + " / " + String(transY);
+                events.send(String(consoleStr).c_str(), "message", millis());
               } else if (transY < distanceCalc && distanceCalc < maxDis) {
-                Serial.printf("TransistörValue 9.2 X:%d Y:%d\n", transX, transY);
+                //Serial.printf("TransistörValue 9.2 X:%d Y:%d\n", transX, transY);
+                consoleStr = "TransistörValue 9.2 : " + String(transX) + " / " + String(transY);
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             default:
@@ -516,55 +596,75 @@ void loop() {
           }
 
           // Relay Value
-          switch (relayValue.toInt()) { 
+          switch (relayValue.toInt()) {
             case 0:
               // OFF
               break;
             case 1:
               if (minDis < distanceCalc) {
-                Serial.println("RelayValue 1 : ");
+                //Serial.println("RelayValue 1 : ");
+                consoleStr = "RelayValue 1 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 2:
               if (minDis > distanceCalc) {
-                Serial.println("RelayValue 2 : ");
+                //Serial.println("RelayValue 2 : ");
+                consoleStr = "RelayValue 2 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 3:
               if (maxDis < distanceCalc) {
-                Serial.println("RelayValue 3 : ");
+                //Serial.println("RelayValue 3 : ");
+                consoleStr = "RelayValue 3 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 4:
               if (maxDis > distanceCalc) {
-                Serial.println("RelayValue 4 : ");
+                //Serial.println("RelayValue 4 : ");
+                consoleStr = "RelayValue 4 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 5:
               if (minDis < distanceCalc && distanceCalc < maxDis) {
-                Serial.println("RelayValue 5 : ");
+                //Serial.println("RelayValue 5 : ");
+                consoleStr = "RelayValue 5 : ";
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 6:
               if (relayX < distanceCalc) {
-                Serial.printf("RelayValue 6 X:%d\n", relayX);
+                //Serial.printf("RelayValue 6 X:%d\n", relayX);
+                consoleStr = "RelayValue 6 : " + String(relayX);
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 7:
               if (relayX > distanceCalc) {
-                Serial.printf("RelayValue 7 X:%d\n", relayX);
+                //Serial.printf("RelayValue 7 X:%d\n", relayX);
+                consoleStr = "RelayValue 7 : " + String(relayX);
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 8:
               if (relayX < distanceCalc && distanceCalc < relayY) {
-                Serial.printf("RelayValue 8 X:%d Y:%d\n", relayX, relayY);
+                //Serial.printf("RelayValue 8 X:%d Y:%d\n", relayX, relayY);
+                consoleStr = "RelayValue 8 : " + String(relayX) + " / " + String(relayY);
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             case 9:
               if (minDis < distanceCalc && distanceCalc < relayX) {
-                Serial.printf("RelayValue 9.1 X:%d Y:%d\n", relayX, relayY);
+                //Serial.printf("RelayValue 9.1 X:%d Y:%d\n", relayX, relayY);
+                consoleStr = "RelayValue 9.1 : " + String(relayX) + " / " + String(relayY);
+                events.send(String(consoleStr).c_str(), "message", millis());
               } else if (relayY < distanceCalc && distanceCalc < maxDis) {
-                Serial.printf("RelayValue 9.2 X:%d Y:%d\n", relayX, relayY);
+                //Serial.printf("RelayValue 9.2 X:%d Y:%d\n", relayX, relayY);
+                consoleStr = "RelayValue 9.2 : " + String(relayX) + " / " + String(relayY);
+                events.send(String(consoleStr).c_str(), "message", millis());
               }
               break;
             default:
@@ -574,17 +674,24 @@ void loop() {
         }
 
       } else {
-        Serial.println("Exceeding the lower or upper limit :" + String(distance) + "min:" + String(minDis) + "max:" + String(maxDis));
+        //Serial.println("Exceeding the lower or upper limit :" + String(distance) + "min:" + String(minDis) + "max:" + String(maxDis));
+        consoleStr = "Exceeding the lower or upper limit :" + String(distance) + "min:" + String(minDis) + "max:" + String(maxDis);
+        events.send(String(consoleStr).c_str(), "message", millis());
         events.send(String(distanceCalc).c_str(), "DistanceVal", millis());
+
       }
     } else {
-      Serial.println("ERROR");
+      //Serial.println("ERROR");
+      /*
+        consoleStr="ERROR";
+        events.send(String(consoleStr).c_str(), "message", millis());
+      */
     }
   }
 
   // OLED ekranda değerleri gösterme
   display.clearDisplay();
-  displayText(String(distance), 10, 10);
+  displayText(String((int)distance), 10, 10);
 
   //delay(60);
 }
@@ -599,7 +706,7 @@ float calcOffset(float dist, String off) {
 
 // Sensör verilerini okuma fonksiyonu
 bool readSensorData() {
-
+ 
   do {
     for (int i = 0; i < 4; i++)
     {
@@ -620,7 +727,8 @@ bool readSensorData() {
   return false;
 }
 
-void setParam(String p1, String p2, String p3, unsigned long p4, String p5, String p6, String p7, String p8, String p9, String p10, String p11, String p12,String p13) {
+void setParam(String p1, String p2, String p3, unsigned long p4, String p5, String p6, String p7, String p8, String p9, String p10,
+              String p11, String p12, String p13,String p14, String p15, String p16, String p17) {
   minDis = p1.toFloat();
   maxDis = p2.toFloat();
   offset = p3.toFloat();
@@ -634,8 +742,15 @@ void setParam(String p1, String p2, String p3, unsigned long p4, String p5, Stri
   relay = p11;
   relayX = p12.toInt();
   relayY = p13.toInt();
+  selectDS = p14.toInt();
+  baudRTU = baudSelect(p15);
+  serialConfig = serialSelect(p16);
+  slaveID=p17.toInt();
 
-
+  
+  //au16data[2]=(int)minDis;
+  updateDataFromServer((int)minDis,2);
+  
   events.send(String(p6).c_str(), "OutputVal", millis());
   events.send(String(p7).c_str(), "OutputValRev", millis());
   events.send(String(p8).c_str(), "TransistorVal", millis());
@@ -643,9 +758,9 @@ void setParam(String p1, String p2, String p3, unsigned long p4, String p5, Stri
   events.send(String(p10).c_str(), "TransYVal", millis());
 }
 
-void writeEeprom(String p1, String p2, String p3, unsigned long p4, String p6, String p7, String p8, String p9, String p10, String p11, String p12,String p13) {
-  Serial.println("Eeproma gelen p7: " + p7);
-  delay(2000);
+void writeEeprom(String p1, String p2, String p3, unsigned long p4, String p6, String p7, String p8, String p9, String p10, String p11, String p12, String p13
+              ,String p14, String p15, String p16, String p17) {
+  bool flag = false;
   preferences.begin(resetNamespace, false);
   if (p1 != mindisValue) {
     mindisValue = p1;
@@ -689,25 +804,45 @@ void writeEeprom(String p1, String p2, String p3, unsigned long p4, String p6, S
     transYValue = p10;
     preferences.putString(transYKey, transYValue);
   }
-  if(p11 != relayValue){
-    relayValue=p11;
-    preferences.putString(relayKey,relayValue);
+  if (p11 != relayValue) {
+    relayValue = p11;
+    preferences.putString(relayKey, relayValue);
   }
-  if(p12 != relayXValue){
-    relayXValue=p12;
-    preferences.putString(relayXKey,relayXValue);
+  if (p12 != relayXValue) {
+    relayXValue = p12;
+    preferences.putString(relayXKey, relayXValue);
   }
-  if(p13 != relayYValue){
-    relayYValue=p13;
-    preferences.putString(relayYKey,relayYValue);
+  if (p13 != relayYValue) {
+    relayYValue = p13;
+    preferences.putString(relayYKey, relayYValue);
   }
-
-
+  if (p14 != selectValue){
+    selectValue=p14;
+    preferences.putString(selectKey,selectValue);
+  }
+  if (p15 != baudValue){
+    baudValue=p15;
+    preferences.putString(baudKey,baudValue);
+    flag=true;
+  }
+  if (p16 != comValue){
+    comValue=p16;
+    preferences.putString(comKey,comValue);
+    flag=true;
+  }
+  if (p17 != slaveValue){
+    slaveValue=p17;
+    preferences.putString(slaveKey,slaveValue);
+    flag=true;
+  }
 
   preferences.end();
   delay(10);
   events.send(percentValue.c_str(), "PercentVal", millis());
   //////////
+  if (flag) {
+    ESP.restart();
+  }
 }
 
 void calcOutType1(float flag, float minD, float maxD, float dist) {
@@ -729,9 +864,126 @@ void calcOutType2(float flag, float minD, float maxD, float dist) {
     //Serial.println("0-10V OUT Reversed: " + String(y));
   }
 }
+void io_poll() {
+
+  au16data[0] = (int)distance;
+  au16data[1] = (int)distanceCalc;
+  consoleStr = "au16data[2]= " + String(au16data[2]);
+  events.send(String(consoleStr).c_str(), "message", millis());
+  consoleStr = "au16dataCheck[2]= " + String(au16dataCheck[2]);
+  events.send(String(consoleStr).c_str(), "message", millis());
+  //updateDataFromPLC((int)minDis, 2);  // au16data[2] için güncelleme
+
+  if (au16data[2] != au16dataCheck[2]) {
+    minDis = (float)au16data[2];
+    au16dataCheck[2] = au16data[2];
+    events.send(String(au16data[2]).c_str(), "MinDis", millis());
+  } else {
+    consoleStr = "MinDis= " + String(minDis);
+    events.send(String(consoleStr).c_str(), "message", millis());
+    au16data[2] = (int)minDis;
+    au16dataCheck[2]= (int)minDis;
+  }
 
 
+  au16data[3] = maxDis;
 
+
+  au16data[4] = offset;
+  au16data[5] = percent;
+
+  au16data[6] = 45; //Modbus Gelen Mesaj Sayısı
+
+}
+/*
+void updateDataFromPLC(uint16_t newValue, int index) {
+  noInterrupts();  // Kesintileri devre dışı bırak
+  au16data[index] = newValue;
+  au16dataCheck[index] = newValue;
+  interrupts();  // Kesintileri tekrar etkinleştir
+}
+*/
+
+void updateDataFromPLC(uint16_t newValue, int index) {
+  noInterrupts();  // Kesintileri devre dışı bırak
+  
+  if (au16data[index] != newValue) {
+    au16data[index] = newValue;
+    au16dataCheck[index] = newValue;
+
+    // Değer değiştiğinde yapılacak işlemler (örneğin veri gönderimi)
+    if (index == 2) {
+      float minDis = (float)newValue;
+      events.send(String(newValue).c_str(), "MinDis", millis());
+    }
+  } else {
+    // Değer değişmediyse yapılacak işlemler
+    if (index == 2) {
+      float minDis = (float)au16dataCheck[index];
+      String consoleStr = "MinDis= " + String(minDis);
+      events.send(String(consoleStr).c_str(), "message", millis());
+
+      // Tekrar önceki değere eşitleme
+      au16data[index] = (int)minDis;
+      au16dataCheck[index] = (int)minDis;
+    }
+  }
+  
+  interrupts();  // Kesintileri tekrar etkinleştir
+}
+
+
+void updateDataFromServer(uint16_t newValue, int index) {
+  noInterrupts();  // Kesintileri devre dışı bırak
+  au16data[index] = newValue;
+  au16dataCheck[index] = newValue;
+  interrupts();  // Kesintileri tekrar etkinleştir
+}
+
+int baudSelect(String p) {
+    switch (p.toInt()) {
+        case 0:
+            return 1200;
+        case 1:
+            return 2400;
+        case 2:
+            return 4800;
+        case 3:
+            return 9600;
+        case 4:
+            return 19200; 
+        case 5:
+            return 38400;
+        case 6:
+            return 57600;
+        case 7:
+            return 115200;
+        default:
+            //anomali
+            break;
+    }
+}
+
+
+SerialConfig serialSelect(String p){
+  switch (p.toInt()) {
+        case 0:
+            return SERIAL_8E1;
+        case 1:
+            return SERIAL_8E2;
+        case 2:
+            return SERIAL_8N1;
+        case 3:
+            return SERIAL_8N2;
+        case 4:
+            return SERIAL_8O1; 
+        case 5:
+            return SERIAL_8O2;
+        default:
+            //anomali
+            break;
+    }
+}
 // OLED ekranda metin yazdırma fonksiyonu
 void displayText(String text, int x, int y) {
   display.setTextSize(3);

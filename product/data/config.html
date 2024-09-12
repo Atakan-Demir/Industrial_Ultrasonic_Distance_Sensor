@@ -81,6 +81,31 @@
         <h1 class="text-center mb-4">Sensor Configuration</h1>
 
         <form id="paraForm">
+            <div class="card mb-4">
+                <div class="card-header card-head-text text-center">
+                    <div data-lang="">Datasource</div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        
+                        <div class="col-md-12">
+                            <label for="datasourceSelect" class="form-label fw-bolder" data-lang="">Datasource</label>
+                            <select class="form-select" id="datasourceSelect">
+                                <option value="0" data-lang="">Server Params</option>
+                                <option value="1" data-lang="">Modbus RTU</option>
+                            </select>
+                                
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <span class="text-muted fw-normal" style="font-style: italic;"><svg
+                                    xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#ffc107"
+                                    class="bi bi-circle-fill me-2 " viewBox="0 0 16 16">
+                                    <circle cx="8" cy="8" r="8" />
+                                </svg><span data-lang="">Eğer Mobbus RTU seçeneğini veri kaynağı olarak seçerseniz sensörün 4-20ma/0-10V/Transistör/Röle çıkışları iptal olacaktır.</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Parametre Ayarları -->
             <h6 id="trans" style="position: absolute;">%TRANSISTORVALUE%</h6>
             <h6 id="rly" style="position: absolute;">%RELAYVALUE%</h6>
@@ -370,7 +395,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="wifiUsername" class="form-label fw-bolder" data-lang="wifi_ssid_label"></label>
-                            <input type="text" class="form-control" id="wifiUsername" placeholder="Enter WiFi username" required>
+                            <input type="text" class="form-control" id="wifiUsername" placeholder="Enter WiFi username">
                         </div>
                         <div class="col-md-6">
                             <label for="wifiPassword" class="form-label fw-bolder" data-lang="wifi_password_label"></label>
@@ -389,31 +414,49 @@
             </div>
 
             <!-- Baudrate Ayarları -->
+            <h6 id="select" style="position: absolute;">%SELECTVAL%</h6>
+            <h6 id="baud" style="position: absolute;">%BAUDVAL%</h6>
+            <h6 id="com" style="position: absolute;">%COMVAL%</h6>
+            <h6 id="slave" style="position: absolute;">%SLAVEVAL%</h6>
             <div class="card mb-4">
                 <div class="card-header card-head-text text-center">
                     <div data-lang="modbus_config_label"></div>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-6">
                             <label for="baudRate" class="form-label fw-bolder" data-lang="modbus_baud_label"></label>
                             <select class="form-select" id="baudRate">
-                                <option value="9600">9600</option>
-                                <option value="19200">19200</option>
-                                <option value="38400">38400</option>
-                                <option value="57600">57600</option>
-                                <option value="115200">115200</option>
+                                <option value="0">1200</option>
+                                <option value="1">2400</option>
+                                <option value="2">4800</option>
+                                <option value="3">9600</option>
+                                <option value="4">19200</option>
+                                <option value="5">38400</option>
+                                <option value="6">57600</option>
+                                <option value="7">115200</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-3 col-lg-3">
                             <label for="comtype" class="form-label fw-bolder" data-lang="modbus_type_label"></label>
                             <select class="form-select" id="comtype">
-                                <option value="8e1">8, even, 1</option>
-                                <option value="8n1">8, none, 1</option>
+                                <option value="0">8, even, 1</option>
+                                <option value="1">8, even, 2</option>
+                                <option value="2">8, none, 1</option>
+                                <option value="3">8, none, 2</option>
+                                <option value="4">8, odd, 1</option>
+                                <option value="5">8, odd, 2</option>
 
                             </select>
                         </div>
+                        <div class="col-12 col-md-3 col-lg-3">
+                            <label for="slaveId" class="form-label fw-bolder" data-lang="modbus_slaveId_label"></label>
+                           
+                            <input type="number" class="form-control" id="slaveId" value="%SLAVEVAL%" min="1"
+                                max="255" placeholder="Select Slave Id" required>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
 

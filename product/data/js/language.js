@@ -76,7 +76,7 @@ export const languages = {
         param_label: "Parametre Ayarları",
         output_label: "Çıkış Ayarları",
         output_type_label: "Çıkış Tipi",
-        output_reverse_label: "Çıkışlar tesrsine çevrilsin mi?",
+        output_reverse_label: "Çıkışlar tersine çevrilsin mi?",
         output_warning: "Çıkışların değerleri standart olarak minimum mesafeden maximum mesafeye göre hesaplanmıştır. Eğer bunun tersine ihtiyacınız varsa onay kutusunu işaretleyip size uygun seçeneği seçiniz.",
         val0_label: "Kapalı",
         val1_label: "Minimum < ---",
@@ -98,6 +98,7 @@ export const languages = {
         modbus_config_label: "Modbus Ayarları",
         modbus_baud_label: "Baud Oranı",
         modbus_type_label: "Modbus Tipi",
+        modbus_slaveId_label: "Slave ID",
         submit_button: "Gönder",
 
 

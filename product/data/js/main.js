@@ -57,7 +57,11 @@ document.addEventListener("DOMContentLoaded", function () {
         transistorY: null,
         relay: null,
         relayX: null,
-        relayY: null
+        relayY: null,
+        select: null,
+        baud: null,
+        com: null,
+        slave: null,
 
     };
 
@@ -75,6 +79,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var relay;
     var relayX;
     var relayY;
+    var select;
+    var baud;
+    var com;
+    var slave;
 
     window.addEventListener('load', onLoad);
 
@@ -223,6 +231,45 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, false);
 
+
+        source.addEventListener('SelectVal', function (e) {
+            currentValues.select = e.data;
+            select = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("select").value = e.data;
+                document.getElementById("datasourceSelect").value = e.data;
+
+            }
+        }, false);
+
+
+        source.addEventListener('BaudVal', function (e) {
+            currentValues.baud = e.data;
+            baud = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("baud").value = e.data;
+                document.getElementById("baudRate").value = e.data;
+            }
+        }, false);
+
+        source.addEventListener('ComVal', function (e) {
+            currentValues.com = e.data;
+            com = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("com").value = e.data;
+                document.getElementById("comtype").value = e.data;
+
+            }
+        }, false);
+
+        source.addEventListener('SlaveVal', function (e) {
+            currentValues.slave = e.data;
+            slave = e.data;
+            if (path === '/config' || path === '/config.html') {
+                document.getElementById("slaveId").value = e.data;
+            }
+        }, false);
+
         source.addEventListener('DistanceVal', function (e) {
             if (path === '/' || path === '/index.html') {
                 var elm = document.getElementById("distanceValue");
@@ -249,7 +296,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         loadInitialValues();
     }
-    function updateFormValues(minDis, maxDis, offset, distance, interval, percent, outputType, outputTypeRev, transistor, transistorX, transistorY, relay, relayX, relayY) {
+    function updateFormValues(minDis, maxDis, offset, distance, interval, percent, outputType, outputTypeRev, transistor, transistorX, transistorY, relay, relayX, relayY, select, baud, com, slave) {
         currentValues.minDis = minDis;
         currentValues.maxDis = maxDis;
         currentValues.offset = offset;
@@ -264,6 +311,12 @@ document.addEventListener("DOMContentLoaded", function () {
         currentValues.relay = relay;
         currentValues.relayX = relayX;
         currentValues.relayY = relayY;
+        currentValues.select = select;
+        currentValues.baud = baud;
+        currentValues.com = com;
+        currentValues.slave = slave;
+
+        
 
         //if config
 
@@ -285,6 +338,15 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("RelayXXX: " + relayX);
             document.getElementById("relayInputX").value = parseInt(relayX);
             document.getElementById("relayInputY").value = parseInt(relayY);
+            document.getElementById("select").value = select;
+            document.getElementById("datasourceSelect").value = select;
+            document.getElementById("baud").value = baud;
+            document.getElementById("baudRate").value = baud;
+            document.getElementById("com").value = com;
+            document.getElementById("comtype").value = com;
+            document.getElementById("slaveId").value = slave
+
+            
         }
 
 
@@ -325,12 +387,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     currentValues.relay = doc.getElementById("rly").innerText;
                     currentValues.relayX = parseInt(doc.getElementById("rlyX").innerText);
                     currentValues.relayY = parseInt(doc.getElementById("rlyY").innerText);
+                    currentValues.select = doc.getElementById("select").value;
+                    currentValues.baud = doc.getElementById("baud").value;
+                    currentValues.com = doc.getElementById("com").value;
+                    currentValues.slave = doc.getElementById("slaveId").value;
+
 
 
 
                     updateTransistorOutputBar(currentValues.transistor, currentValues.minDis, currentValues.maxDis, currentValues.transistorX, currentValues.transistorY);
                     updateRelayOutputBar(currentValues.relay, currentValues.minDis, currentValues.maxDis, currentValues.relayX, currentValues.relayY);
-                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.transistor, currentValues.transistorX, currentValues.transistorY,currentValues.relay, currentValues.relayX, currentValues.relayY);
+                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.transistor, currentValues.transistorX, currentValues.transistorY,currentValues.relay, currentValues.relayX, currentValues.relayY, currentValues.select, currentValues.baud, currentValues.com, currentValues.slave);
                 }
 
 
@@ -414,10 +481,26 @@ document.addEventListener("DOMContentLoaded", function () {
                         document.getElementById("relayInputY").disabled = true;
                     }
                     
+                    var selectValue = doc.getElementById("select").innerText.trim();
+                    currentValues.select = selectValue;
+                    var selectElmnt = document.getElementById("datasourceSelect");
+                    selectElmnt.value = selectValue;
+
+                    var baudValue = doc.getElementById("baud").innerText.trim();
+                    currentValues.baud = baudValue;
+                    var baudElmnt = document.getElementById("baudRate");
+                    baudElmnt.value = baudValue;
+
+                    var comValue = doc.getElementById("com").innerText.trim();
+                    currentValues.com = comValue;
+                    var comElmnt = document.getElementById("comtype");
+                    comElmnt.value = comValue;
+
+                    currentValues.slave = doc.getElementById("slaveId").value;
 
                     updateTransistorOutputBar(transistorValue, currentValues.minDis, currentValues.maxDis, currentValues.transistorX, currentValues.transistorY);
                     updateRelayOutputBar(relayValue, currentValues.minDis, currentValues.maxDis, currentValues.relayX, currentValues.relayY);
-                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.outputTypeRev, currentValues.transistor, currentValues.transistorX, currentValues.transistorY, currentValues.relay, currentValues.relayX, currentValues.relayY);
+                    updateFormValues(currentValues.minDis, currentValues.maxDis, currentValues.offset, currentValues.distance, currentValues.interval, currentValues.percent, currentValues.outputType, currentValues.outputTypeRev, currentValues.transistor, currentValues.transistorX, currentValues.transistorY, currentValues.relay, currentValues.relayX, currentValues.relayY, currentValues.select, currentValues.baud, currentValues.com, currentValues.slave);
                     //updateProgressBar();
                 }
             };
@@ -524,6 +607,11 @@ document.addEventListener("DOMContentLoaded", function () {
             relayX = document.getElementById("relayInputX").value;
             relayY = document.getElementById("relayInputY").value;
 
+            select = document.getElementById("datasourceSelect").value;
+            baud = document.getElementById("baudRate").value;
+            com = document.getElementById("comtype").value;
+            slave = document.getElementById("slaveId").value;
+
             console.log("D :" + distance);
             console.log("CD :" + currentValues.distance);
 
@@ -532,7 +620,7 @@ document.addEventListener("DOMContentLoaded", function () {
             function validateForm() {
 
                 // Değerlerin boş olup olmadığını kontrol et
-                if (minDis === "" || maxDis === "" || offset === "" || interval === "" || outputType === "" || outputTypeRev === "" || transistor === "" || transistorX === "" || transistorY === "" || relay === "" || relayX === "" || relayY === "") {
+                if (minDis === "" || maxDis === "" || offset === "" || interval === "" || outputType === "" || outputTypeRev === "" || transistor === "" || transistorX === "" || transistorY === "" || relay === "" || relayX === "" || relayY === "" || select === "" || baud === "" || com === "" || slave === "") {
                     alert("Form empty!!");
                     return false;
                 }
@@ -590,7 +678,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 // Diğer kontroller
-                if (minDis == currentValues.minDis && maxDis == currentValues.maxDis && offset == currentValues.offset && interval == currentValues.interval && outputType == currentValues.outputType && outputTypeRev == currentValues.outputTypeRev && transistor == currentValues.transistor && transistorX == currentValues.transistorX && transistorY == currentValues.transistorY && relay == currentValues.relay && relayX == currentValues.relayX && relayY == currentValues.relayY) {
+                if (minDis == currentValues.minDis && maxDis == currentValues.maxDis && offset == currentValues.offset && interval == currentValues.interval && outputType == currentValues.outputType && outputTypeRev == currentValues.outputTypeRev && transistor == currentValues.transistor && transistorX == currentValues.transistorX && transistorY == currentValues.transistorY && relay == currentValues.relay && relayX == currentValues.relayX && relayY == currentValues.relayY && select == currentValues.select && baud == currentValues.baud && com == currentValues.com && slave == currentValues.slave) {
                     alert("Değerler aynı. Parametre gönderimi yapamazsınız!");
                     return false;
                 } else if (offset / currentValues.distance > 0.05) {
@@ -614,11 +702,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Form geçerliyse verileri gönder
                 console.log("Percent calculated: " + offset / currentValues.distance);
                 var xhr = new XMLHttpRequest();
-                xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset + "&interval=" + interval + "&outputType=" + outputType + "&outputTypeRev=" + outputTypeRev + "&transistor=" + transistor + "&transXVal=" + transistorX + "&transYVal=" + transistorY+"&relay="+relay+"&relayXVal="+relayX+"&relayYVal="+relayY, true);
+                xhr.open("GET", "/param?value=" + minDis + "&maxdis=" + maxDis + "&offset=" + offset + "&interval=" + interval + "&outputType=" + outputType + "&outputTypeRev=" + outputTypeRev + "&transistor=" + transistor + "&transXVal=" + transistorX + "&transYVal=" + transistorY+"&relay="+relay+"&relayXVal="+relayX+"&relayYVal="+relayY+"&selectVal="+select+"&baudVal="+baud+"&comVal="+com+"&slaveVal="+slave, true);
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         console.log('200 OK! Gönderim tamam.');
-                        updateFormValues(minDis, maxDis, offset, currentValues.distance, interval, percent, outputType, outputTypeRev, transistor, transistorX, transistorY, relay, relayX, relayY);
+                        updateFormValues(minDis, maxDis, offset, currentValues.distance, interval, percent, outputType, outputTypeRev, transistor, transistorX, transistorY, relay, relayX, relayY, select, baud, com, slave);
                         updateTransistorOutputBar(transistor, minDis, maxDis, transistorX, transistorY);
                         updateRelayOutputBar(relay, minDis, maxDis, relayX, relayY);
                         loadInitialValues();
